@@ -1,50 +1,107 @@
+"use client";
 import Image from "next/image";
+import Link from 'next/link';
+import { useState } from 'react';
+import { FaGithub, FaLinkedin, FaRegCopy } from 'react-icons/fa';
+import { IoMdCheckmark } from 'react-icons/io';
+import { SlCopyButton } from '@shoelace-style/shoelace';
 
 export default function Home() {
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText('manavbdodia@gmail.com');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
+  };
+
+
   return (
     <main className="flex min-h-screen flex-col pt-12">
       <div className="flex">
       {/* Header Section */}
-      <header className="w-full max-w-4xl mb-16">
+      <header className="w-full max-w-4xl mb-16 mt-32">
         <h1 className="text-6xl font-bold mb-4">
           Hi, I'm Manav
         </h1>
         <p className="text-lg">
           A final year Computer Science student at UNSW.
           <br />
-          🚧 This section is under construction! 🚧
         </p>
+        <div>
+        <p className="text-lg">
+      Contact me at <span className="text-blue-500 font-semibold">manavbdodia@gmail.com</span>
+      <button 
+        onClick={copyToClipboard} 
+        className="ml-2 bg-transparent rounded transition-colors duration-150 ease-in-out focus:outline-none"
+        aria-label="Copy email to clipboard"
+      >
+        {copied ? (
+          <IoMdCheckmark className="text-green-500 w-5 h-5 transition-colors duration-150 ease-in-out" />
+        ) : (
+          <FaRegCopy className="text-gray-500 dark:text-gray-400 w-5 h-5 hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-150 ease-in-out" />
+        )}
+      </button>
+      {copied && <span className="mr-8 text-xs opacity-50">Copied!</span>}
+    </p>
+</div>
+
+      {/* Icon Buttons Section */}
+      <div className="flex space-x-4 mt-4 justify-self-auto">
+      <a href="https://github.com/manav1411" target="_blank" rel="noopener noreferrer">
+  <button className="">
+    <FaGithub className="w-8 h-8 hover:text-blue-500 transition-colors duration-50 ease-in-out" />
+  </button>
+</a>
+
+        <a href="https://linkedin.com/in/manav-dodia" target="_blank" rel="noopener noreferrer">
+        <button className="">
+    <FaLinkedin className="w-8 h-8 hover:text-blue-500 transition-colors duration-50 ease-in-out" />
+  </button>
+        </a>
+      </div>
       </header>
 
       {/* Profile Picture */}
-      <Image src="/manav.jpg" alt="Manav Dodia" width={208} height={312} className="rounded-md mb-8 ml-16" />
+      <Image src="/manav.png" alt="Manav Dodia" width={208*1.5} height={312*1.5} className="rounded-md mb-8" />
       </div>
 
-
-      {/* Contact Section */}
       <section className="w-full max-w-4xl mb-16">
-        <h2 className="text-3xl font-semibold mb-6">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-semibold mb-6">
+            Experience
+          </h2>
+          <Link
+              href="/resume"
+              className={`px-4 py-2 border rounded-md transition text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700`}
+            >
+              View resume
+            </Link>
+        </div>
         🚧 This section is under construction! 🚧
-        </h2>
-        <p className="leading-relaxed mb-4">
-          Feel free to reach out if you’d like to connect or collaborate.
-        </p>
-        <p className="mb-2">
-          Phone: <a href="tel:+0452342944" className="text-blue-500 dark:text-blue-400">04 5234 2944</a>
-        </p>
-        <p className="mb-2">
-          Email: <a href="mailto:manavbdodia@gmail.com" className="text-blue-500 dark:text-blue-400">manavbdodia@gmail.com</a>
-        </p>
-        <p className="mb-2">
-          GitHub: <a href="https://github.com/manav1411" className="text-blue-500 dark:text-blue-400" target="_blank" rel="noopener noreferrer">github.com/manav1411</a>
-        </p>
-        <p className="mb-2">
-          LinkedIn: <a href="https://linkedin.com/in/manav-dodia" className="text-blue-500 dark:text-blue-400" target="_blank" rel="noopener noreferrer">linkedin.com/in/manav-dodia</a>
-        </p>
-        <p className="mb-2">
-          Website: <a href="https://manavdodia.com" className="text-blue-500 dark:text-blue-400" target="_blank" rel="noopener noreferrer">manavdodia.com</a>
-        </p>
+        <br />
+        TODO: list contract work, experiences.
       </section>
+
+
+
+      <section className="w-full max-w-4xl mb-16">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-semibold mb-6">
+            Projects
+          </h2>
+          <Link
+              href="/projects"
+              className={`px-4 py-2 border rounded-md transition text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700`}
+            >
+              All Projects
+            </Link>
+        </div>
+        🚧 This section is under construction! 🚧
+        <br />
+        TODO: list a few projs here.
+      </section>
+
 
       {/* Footer */}
       <footer className="">
