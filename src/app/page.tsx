@@ -66,7 +66,7 @@ export default function Home() {
         </header>
 
         {/* Profile Picture */}
-        <Image src="/manav.png" alt="Manav Dodia" width={208*1.43} height={312*1.43} className="rounded-md mb-8" />
+        <Image src="/manav.png" alt="Manav Dodia" width={208*2.25} height={302*2.25} className="rounded-md mb-8" />
       </div>
 
       {/* Resume */}
