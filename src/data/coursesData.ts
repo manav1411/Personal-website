@@ -12,11 +12,11 @@ const categories: Category[] = [
     {
       title: 'Cyber Security',
       courses: [
-        { name: 'COMP6841: Security Engineering & Cyber Security (Extended)', description: 'Lorem ipsum dolor sit amet,' },
         { name: 'COMP6843: Web Application Security & Testing (Extended)', description: 'Lorem ipsum dolor sit amet,' },
-        { name: 'COMP6448: Cloud Security Fundamentals', description: 'Study of techniques for secure communication.' },
         { name: 'COMP6845: Digital Forensics (Extended)', description: 'Lorem ipsum dolor sit amet,' },
         { name: 'COMP6447: System and Software Security Assessment', description: 'Lorem ipsum dolor sit amet,' },
+        { name: 'COMP6448: Cloud Security Fundamentals', description: 'Study of techniques for secure communication.' },
+        { name: 'COMP6841: Security Engineering & Cyber Security (Extended)', description: 'Lorem ipsum dolor sit amet,' },
       ]
     },
     {

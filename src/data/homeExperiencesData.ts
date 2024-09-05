@@ -4,21 +4,21 @@ type Experience = {
     details: string[];
   };
   
-  const experiences = [
+  const experiences: Experience[] = [
     {
       title: 'Trimmer – Contract Development',
       year: '2024',
       details: [
-        '🚧 This section is under construction! 🚧',
-        '🚧 This section is under construction! 🚧',
+        'We bult an MVP google-calendar integrated tool to assist with task management and scheduling',
+        'I worked frontend and backend, using Supabase, Next.js, and Tailwind to build the applicaiton',
       ],
     },
     {
       title: 'GreenCollar – Software Engineer Internship',
       year: '2023',
       details: [
-        '🚧 This section is under construction! 🚧',
-        '🚧 This section is under construction! 🚧',
+        'I developed a tool that automates imagery acquisition, by interfacing with external APIs',
+        'My Python and React application reduced the data collection process by up to 40%',
       ],
     },
   ];

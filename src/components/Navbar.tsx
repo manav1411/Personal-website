@@ -25,7 +25,7 @@ const Navbar = () => {
         {/* Logo/Name */}
         <Link
           href="/"
-          className="text-xl font-bold relative inline-block transition-all duration-300 hover:text-blue-500 dark:hover:text-blue-400"
+          className="text-2xl font-bold relative inline-block transition-all duration-300 hover:text-blue-500 dark:hover:text-blue-400"
         >
           Manav Dodia
           <span className="absolute left-0 bottom-0 block w-full h-1 bg-blue-500 dark:bg-blue-400 transition-transform transform scale-x-0 hover:scale-x-100"></span>
@@ -76,10 +76,12 @@ const Navbar = () => {
             <span
               style={{
                 display: 'inline-block',
-                filter: 'drop-shadow(0px 0px 12px rgba(255, 255, 0, 0.6))',
+                filter: theme === 'dark' 
+                  ? 'drop-shadow(0px 0px 12px rgba(255, 255, 0, 0.8))' 
+                  : 'drop-shadow(0px 0px 12px rgba(0, 0, 0, 0.8))',
               }}
             >
-              {theme === 'dark' ? '🌒' : '☀️'}
+              {theme === 'dark' ? '☀️' : '🌒'}
             </span>
           </button>
         </div>

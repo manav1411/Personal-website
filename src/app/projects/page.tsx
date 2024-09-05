@@ -11,11 +11,18 @@ const ProjectsPage: FC = () => {
                     Projects
                 </h1>
                 <p className="text-lg text-gray-700 dark:text-gray-300">
-                    🚧 This section is under construction! 🚧
+                    Various open-source projects I've made :)
                     <br />
-                    TODO: Brief info about projects.
-                    <br />
-                    include more projects: trimmer, greenCollar, etc
+                    My other projects are on my{' '}
+                    <a 
+                        href="https://github.com/manav1411" 
+                        className="text-blue-500 hover:underline hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        GitHub
+                    </a>
+                    .
                 </p>
             </header>
             <section className="w-full max-w-4xl">
@@ -25,6 +32,16 @@ const ProjectsPage: FC = () => {
                     ))}
                 </div>
             </section>
+
+            {/* Footer */}
+            <footer className="mt-32 mb-5">
+                <p className="text-sm text-gray-500 text-center">
+                Made with ✨, powered by ☕
+                <br />
+                © 2024 Manav Dodia
+                </p>
+            </footer>
+
         </main>
     );
 };

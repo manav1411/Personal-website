@@ -21,16 +21,18 @@ export default function Home() {
     <main className="flex min-h-screen flex-col pt-12">
       <div className="flex">
         {/* Header Section */}
-        <header className="w-full max-w-4xl mb-16 mt-32">
+        <header className="w-full max-w-4xl mb-16 mt-20">
           <h1 className="text-6xl font-bold mb-4">
             Hi, I'm Manav
           </h1>
+
           <p className="text-lg">
-            A final year Computer Science student at UNSW.
+          I'm in my final year of CS at UNSW, <br /> and am interested in Security.
             <br />
+
           </p>
           <div>
-            <p className="text-lg">
+            <p className="text-lg pt-14">
               Contact me at <span className="text-blue-500 font-semibold">manavbdodia@gmail.com</span>
               <button 
                 onClick={copyToClipboard} 
@@ -64,7 +66,7 @@ export default function Home() {
         </header>
 
         {/* Profile Picture */}
-        <Image src="/manav.png" alt="Manav Dodia" width={208*1.5} height={312*1.5} className="rounded-md mb-8" />
+        <Image src="/manav.png" alt="Manav Dodia" width={208*1.43} height={312*1.43} className="rounded-md mb-8" />
       </div>
 
       {/* Resume */}
@@ -78,6 +80,7 @@ export default function Home() {
             View resume
           </Link>
         </div>
+        <div className="pl-4">
         {experiences.map((experience, index) => (
           <div key={index} className="mb-8">
             <div className="flex justify-between items-center mb-2">
@@ -91,6 +94,7 @@ export default function Home() {
             </ul>
           </div>
         ))}
+        </div>
       </section>
 
 
@@ -116,11 +120,14 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="mt-40 mb-10">
+      <footer className="mt-32 mb-5">
         <p className="text-sm text-gray-500 text-center">
-          some footer. edit this, maybe add stuff. add to all pages except resume
+        Made with ✨, powered by ☕
+        <br />
+        © 2024 Manav Dodia
         </p>
       </footer>
+
     </main>
   );
 }
