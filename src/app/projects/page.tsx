@@ -1,57 +1,77 @@
-//projects subpage
+import { FC } from 'react';
 
-export default function ProjectsPage() {
-    return (
-        <main className="flex min-h-screen flex-col items-center justify-center p-6">
-        {/* Header Section */}
-        <header className="w-full max-w-4xl text-center mb-16">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            🚧 This page is under construction! 🚧
-            </h1>
-            <p className="text-lg text-gray-700 dark:text-gray-300">
-            A collection of projects I have worked on.
-            </p>
-        </header>
-    
-        {/* Project 1 */}
-        <section className="w-full max-w-4xl text-center mb-16">
-            <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-6">
-            Project 1
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-            Description of Project 1.
-            </p>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-            Technologies used: Tech 1, Tech 2, Tech 3.
-            </p>
-        </section>
-    
-        {/* Project 2 */}
-        <section className="w-full max-w-4xl text-center mb-16">
-            <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-6">
-            Project 2
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-            Description of Project 2.
-            </p>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-            Technologies used: Tech 1, Tech 2, Tech 3.
-            </p>
-        </section>
-    
-        {/* Project 3 */}
-        <section className="w-full max-w-4xl text-center mb-16">
-            <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-6">
-            Project 3
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-            Description of Project 3.
-            </p>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-            Technologies used: Tech 1, Tech 2, Tech 3.
-            </p>
-        </section>
-        </main>
-    );
+interface Project {
+    title: string;
+    date: string;
+    sourceUrl?: string;
+    demoUrl?: string;
 }
 
+const projects: Project[] = [
+    {
+        title: 'Project One',
+        date: 'January 2024',
+        sourceUrl: 'https://github.com/user/project-one',
+        demoUrl: 'https://project-one.example.com',
+    },
+    {
+        title: 'Project Two',
+        date: 'February 2024',
+        sourceUrl: 'https://github.com/user/project-two',
+    },
+    // Add more projects here
+];
+
+const ProjectCard: FC<{ project: Project }> = ({ project }) => {
+    return (
+        <div className=" dark:bg-gray-800 border border-gray-400 dark:border-gray-500 rounded-md overflow-hidden shadow-md p-4 flex flex-col transition-all">
+            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">{project.title}</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{project.date}</p>
+            <div className="flex flex-wrap gap-2 mt-auto">
+                {project.sourceUrl && (
+                    <a
+                        href={project.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 border rounded-md transition text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-700"
+                    >
+                        Source
+                    </a>
+                )}
+                {project.demoUrl && (
+                    <a
+                        href={project.demoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 border rounded-md transition text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-700"
+                    >
+                        Demo
+                    </a>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const ProjectsPage: FC = () => {
+    return (
+        <main className="">
+            <header className="w-full max-w-4xl text-center mb-16">
+                <p className="text-lg text-gray-700 dark:text-gray-300">
+                    🚧 This page is under construction! 🚧
+                    <br />
+                    TODO: Brief info about projects. Leave a small buffer at the top.
+                </p>
+            </header>
+            <section className="w-full max-w-4xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {projects.map((project, index) => (
+                        <ProjectCard key={index} project={project} />
+                    ))}
+                </div>
+            </section>
+        </main>
+    );
+};
+
+export default ProjectsPage;

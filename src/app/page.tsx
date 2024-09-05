@@ -73,7 +73,7 @@ export default function Home() {
           </h2>
           <Link
               href="/resume"
-              className={`px-4 py-2 border rounded-md transition text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700`}
+              className={`px-4 py-2 border rounded-md transition text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-700`}
             >
               View resume
             </Link>
@@ -92,14 +92,14 @@ export default function Home() {
           </h2>
           <Link
               href="/projects"
-              className={`px-4 py-2 border rounded-md transition text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700`}
+              className={`px-4 py-2 border rounded-md transition text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-700`}
             >
               All Projects
             </Link>
         </div>
         🚧 This section is under construction! 🚧
         <br />
-        TODO: list a few projs here.
+        TODO: list highlight projs here.
       </section>
 
 
