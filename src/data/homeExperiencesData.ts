@@ -9,7 +9,7 @@ type Experience = {
       title: 'Trimmer – Contract Development',
       year: '2024',
       details: [
-        'We bult an MVP google-calendar integrated tool to assist with task management and scheduling',
+        'Helped build an MVP google-calendar integrated tool to improve task management and scheduling',
         'I worked frontend and backend, using Supabase, Next.js, and Tailwind to build the applicaiton',
       ],
     },
