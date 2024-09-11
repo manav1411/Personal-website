@@ -20,7 +20,7 @@ const Navbar = () => {
   if (!mounted) return null;
 
   return (
-    <nav className="p-4 border-b border-gray-400">
+    <nav className="sticky top-0 z-50 p-4 border-b border-neutral-400 dark:border-neutral-700 bg-zinc-200 dark:bg-neutral-900">
       <div className="container mx-auto flex items-center justify-between">
         {/* Logo/Name */}
         <Link
@@ -39,8 +39,8 @@ const Navbar = () => {
               href="/resume"
               className={`px-4 py-2 border rounded-md transition ${
                 pathname === "/resume"
-                  ? "bg-gray-300 text-gray-900 border-black dark:border-white dark:bg-gray-700 dark:text-gray-100"
-                  : "text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-700"
+                  ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
+                  : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
               }`}
             >
               Resume 📰
@@ -49,8 +49,8 @@ const Navbar = () => {
               href="/projects"
               className={`px-4 py-2 border rounded-md transition ${
                 pathname === "/projects"
-                  ? "bg-gray-300 text-gray-900 border-black dark:border-white dark:bg-gray-700 dark:text-gray-100"
-                  : "text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-700"
+                  ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
+                  : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
               }`}
             >
               Projects 🚀
@@ -59,8 +59,8 @@ const Navbar = () => {
               href="/university"
               className={`px-4 py-2 border rounded-md transition ${
                 pathname === "/university"
-                  ? "bg-gray-300 text-gray-900 border-black dark:border-white dark:bg-gray-700 dark:text-gray-100"
-                  : "text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-700"
+                  ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
+                  : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
               }`}
             >
               University 🏛️
@@ -74,14 +74,17 @@ const Navbar = () => {
             style={{ fontSize: '1.5rem' }}
           >
             <span
+              className="animate-spin"
               style={{
                 display: 'inline-block',
-                filter: theme === 'dark' 
-                  ? 'drop-shadow(0px 0px 12px rgba(255, 255, 0, 0.8))' 
-                  : 'drop-shadow(0px 0px 12px rgba(0, 0, 0, 0.8))',
+                animationDuration: '2s', // Slows down the spinning speed
+                filter:
+                  theme === 'dark'
+                    ? 'drop-shadow(0px 0px 12px rgba(255, 255, 0, 0.8))'
+                    : 'drop-shadow(0px 0px 12px rgba(0, 0, 0, 0.8))',
               }}
             >
-              {theme === 'dark' ? '☀️' : '🌒'}
+                  {theme === 'dark' ? '☀️' : '🌒'}
             </span>
           </button>
         </div>

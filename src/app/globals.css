@@ -4,10 +4,10 @@
 
 /* Global styles for light mode */
 body {
-  @apply bg-gray-200 text-black;
+  @apply bg-zinc-200 text-black;
 }
 
 /* Global styles for dark mode */
 .dark body {
-  @apply bg-gray-900 text-white;
+  @apply bg-neutral-900 text-white;
 }

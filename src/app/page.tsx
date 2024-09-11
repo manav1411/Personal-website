@@ -18,7 +18,7 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col pt-12">
+    <main className="flex min-h-screen flex-col pt-16">
       <div className="flex">
         {/* Header Section */}
         <header className="w-full max-w-4xl mb-16 mt-20">
@@ -66,8 +66,41 @@ export default function Home() {
         </header>
 
         {/* Profile Picture */}
-        <Image src="/manav.png" alt="Manav Dodia" width={208*2.25} height={302*2.25} className="rounded-md mb-8" />
+        <Image 
+          src="/manav.png" 
+          alt="Manav Dodia" 
+          width={208*2.25} 
+          height={302*2.25} 
+          className="rounded-md mb-8 filter animate-none"
+        />
+
       </div>
+
+
+
+      {/* Projects */}
+      <section className="w-full max-w-4xl">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-semibold mb-6">
+            Projects
+          </h2>
+          <Link
+              href="/projects"
+              className={`px-4 py-2 border rounded-md transition text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-700`}
+            >
+              All Projects
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {projects.slice(0, 2).map((project, index) => (
+            <ProjectCard key={index} project={project} />
+          ))}
+        </div>
+      </section>
+
+
+          {/* divider */}
+          <div className="w-full max-w-4xl border-b border-gray-400 dark:border-gray-700 mb-16 mt-16"></div>
 
       {/* Resume */}
       <section className="w-full max-w-4xl mb-16">
@@ -98,26 +131,6 @@ export default function Home() {
       </section>
 
 
-
-      {/* Projects */}
-      <section className="w-full max-w-4xl">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-semibold mb-6">
-            Projects
-          </h2>
-          <Link
-              href="/projects"
-              className={`px-4 py-2 border rounded-md transition text-gray-900 dark:text-gray-100 border-gray-400 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-700`}
-            >
-              All Projects
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {projects.slice(0, 2).map((project, index) => (
-            <ProjectCard key={index} project={project} />
-          ))}
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="mt-32 mb-5">

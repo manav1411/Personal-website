@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ThemeProvider enableSystem={true} attribute="class">
-          <div className="mx-auto max-w-3xl">
+          <div className="mx-auto max-w-4xl">
             <Navbar />
             {children}
           </div>

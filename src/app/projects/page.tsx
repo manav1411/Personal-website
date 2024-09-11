@@ -10,7 +10,7 @@ const ProjectsPage: FC = () => {
                 <h1 className="text-5xl font-bold mb-4">
                     Projects
                 </h1>
-                <p className="text-lg text-gray-700 dark:text-gray-300">
+                <p className="text-lg text-neutral-700 dark:text-neutral-300">
                     Various open-source projects I've made :)
                     <br />
                     My other projects are on my{' '}
@@ -35,7 +35,7 @@ const ProjectsPage: FC = () => {
 
             {/* Footer */}
             <footer className="mt-32 mb-5">
-                <p className="text-sm text-gray-500 text-center">
+                <p className="text-sm text-neutral-500 text-center">
                 Made with ✨, powered by ☕
                 <br />
                 © 2024 Manav Dodia
