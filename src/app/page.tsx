@@ -9,6 +9,7 @@ import projects from '@/data/projectsData';
 import experiences from '@/data/homeExperiencesData';
 
 export default function Home() {
+  const [isHovered, setIsHovered] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = () => {
@@ -66,14 +67,31 @@ export default function Home() {
         </header>
 
         {/* Profile Picture */}
-        <Image 
-          src="/manav.png" 
-          alt="Manav Dodia" 
-          width={208*2.25} 
-          height={302*2.25} 
-          className="rounded-md mb-8 filter animate-none"
-        />
-
+        <div className="relative w-[468px] h-[500px]">
+          <Image
+            src="/manav.png"
+            alt="a photograph of me"
+            width={208 * 2.25}
+            height={302 * 2.25}
+            className={`rounded-md mb-8 absolute ${
+              isHovered ? "opacity-0" : "opacity-100"
+            }`}
+          />
+          <Image
+            src="/manavAnime.png"
+            alt="an Anime illustration of me"
+            width={208 * 2.25}
+            height={302 * 2.25}
+            className={`rounded-md mb-8 absolute ${
+              isHovered ? "opacity-100" : "opacity-0"
+            }`}
+          />
+          <div
+            className="absolute w-full h-full"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          />
+        </div>
       </div>
 
 
