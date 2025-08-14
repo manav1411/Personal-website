@@ -25,7 +25,6 @@ export default function ResumePage() {
       )}
       <iframe
         src="./Resume.pdf"
-        type="application/pdf"
         style={{ width: "100%", height: `${height}px`, border: "none" }}
         onLoad={() => setLoading(false)}
       />
