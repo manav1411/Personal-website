@@ -6,7 +6,7 @@ type Experience = {
   
   const experiences: Experience[] = [
     {
-      title: 'Trimmer – Contract Development',
+      title: 'Mira – Contract Development',
       year: '2024',
       details: [
         'Helped build an MVP google-calendar integrated tool to improve task management and scheduling.',
