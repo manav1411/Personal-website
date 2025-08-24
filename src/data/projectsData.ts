@@ -8,11 +8,23 @@ export interface Project {
 
 const projects: Project[] = [
     {
+        title: 'SimplyServed',
+        year: '2025',
+        description: 'A full-stack self-hosted media server and management platform',
+        sourceUrl: 'https://github.com/manav1411/SimplyServed',
+        demoUrl: 'https://home.manavdodia.com',
+    },
+    {
         title: 'FairShare',
         year: '2024',
         description: 'An automated multi-user receipt management and payment tool',
         sourceUrl: 'https://github.com/manav1411/FairShare',
-        demoUrl: 'https://fairshared.me',
+    },
+    {
+        title: 'MANTIS',
+        year: '2025',
+        description: 'A lightweight, local email organistation tool',
+        sourceUrl: 'https://github.com/manav1411/MANTIS',
     },
     {
         title: 'AntiDDoS',

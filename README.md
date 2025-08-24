@@ -1,5 +1,5 @@
 ## Purpose
-1. This is the code for my personal website, accessible at [manavdodia.com](https://manavdodia.com)\
+1. This is the code for my personal website, accessible at [manavdodia.com](https://manavdodia.com)
 2. This project provides users information about me, and my digital portfolio :)
 
 ## Screenshots
