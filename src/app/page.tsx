@@ -28,7 +28,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg">
-          I'm in my final year of CS at UNSW, <br /> and am interested in Security.
+          I'm a Software Engineer / Security Engineer. <br /> A bit of everything
             <br />
 
           </p>
@@ -155,7 +155,7 @@ export default function Home() {
         <p className="text-sm text-neutral-500 text-center">
         Made with ✨, powered by ☕
         <br />
-        © 2024 Manav Dodia
+        by Manav Dodia
         </p>
       </footer>
 

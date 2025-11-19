@@ -38,7 +38,7 @@ const ProjectsPage: FC = () => {
                 <p className="text-sm text-neutral-500 text-center">
                 Made with ✨, powered by ☕
                 <br />
-                © 2024 Manav Dodia
+                by 2024 Manav Dodia
                 </p>
             </footer>
 
