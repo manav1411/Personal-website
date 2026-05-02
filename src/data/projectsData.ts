@@ -12,7 +12,7 @@ const projects: Project[] = [
         year: '2025',
         description: 'A full-stack self-hosted media server and management platform',
         sourceUrl: 'https://github.com/manav1411/SimplyServed',
-        demoUrl: 'https://home.manavdodia.com',
+        demoUrl: 'https://watch.manavdodia.com',
     },
     {
         title: 'FairShare',
