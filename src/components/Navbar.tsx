@@ -25,7 +25,7 @@ const Navbar = () => {
         {/* Logo/Name */}
         <Link
           href="/"
-          className="text-2xl font-bold relative inline-block transition-all duration-300 hover:text-blue-500 dark:hover:text-blue-400"
+          className="text-2xl font-bold relative inline-block hover:text-blue-500 dark:hover:text-blue-400"
         >
           Manav Dodia
           <span className="absolute left-0 bottom-0 block w-full h-1 bg-blue-500 dark:bg-blue-400 transition-transform transform scale-x-0 hover:scale-x-100"></span>
@@ -37,7 +37,7 @@ const Navbar = () => {
           <div className="space-x-4">
             <Link
               href="/resume"
-              className={`px-4 py-2 border rounded-md transition ${
+              className={`px-4 py-2 border rounded-md ${
                 pathname === "/resume"
                   ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
                   : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
@@ -47,7 +47,7 @@ const Navbar = () => {
             </Link>
             <Link
               href="/projects"
-              className={`px-4 py-2 border rounded-md transition ${
+              className={`px-4 py-2 border rounded-md ${
                 pathname === "/projects"
                   ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
                   : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
@@ -55,9 +55,9 @@ const Navbar = () => {
             >
               Projects 🚀
             </Link>
-            <Link
+<Link
               href="/university"
-              className={`px-4 py-2 border rounded-md transition ${
+              className={`px-4 py-2 border rounded-md ${
                 pathname === "/university"
                   ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
                   : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"

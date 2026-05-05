@@ -37,13 +37,13 @@ export default function Home() {
               Contact me at <span className="text-blue-500 font-semibold">manavbdodia@gmail.com</span>
               <button 
                 onClick={copyToClipboard} 
-                className="ml-2 bg-transparent rounded transition-colors duration-150 ease-in-out focus:outline-none"
+                className="ml-2 bg-transparent rounded focus:outline-none"
                 aria-label="Copy email to clipboard"
               >
                 {copied ? (
-                  <IoMdCheckmark className="text-green-500 w-5 h-5 transition-colors duration-150 ease-in-out" />
+                  <IoMdCheckmark className="text-green-500 w-5 h-5" />
                 ) : (
-                  <FaRegCopy className="text-neutral-500 dark:text-neutral-400 w-5 h-5 hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-150 ease-in-out" />
+                  <FaRegCopy className="text-neutral-500 dark:text-neutral-400 w-5 h-5 hover:text-blue-500 dark:hover:text-blue-400" />
                 )}
               </button>
               {copied && <span className="mr-8 text-xs opacity-50">Copied!</span>}
@@ -54,13 +54,13 @@ export default function Home() {
           <div className="flex space-x-4 mt-4 justify-self-auto">
             <a href="https://github.com/manav1411" target="_blank" rel="noopener noreferrer">
               <button className="">
-                <FaGithub className="w-8 h-8 hover:text-blue-500 transition-colors duration-50 ease-in-out" />
+                <FaGithub className="w-8 h-8 hover:text-blue-500" />
               </button>
             </a>
 
             <a href="https://linkedin.com/in/manav-dodia" target="_blank" rel="noopener noreferrer">
               <button className="">
-                <FaLinkedin className="w-8 h-8 hover:text-blue-500 transition-colors duration-50 ease-in-out" />
+                <FaLinkedin className="w-8 h-8 hover:text-blue-500" />
               </button>
             </a>
           </div>
@@ -103,7 +103,7 @@ export default function Home() {
           </h2>
           <Link
               href="/projects"
-              className={`px-4 py-2 border rounded-md transition text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700`}
+              className={`px-4 py-2 border rounded-md text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700`}
             >
               All Projects
           </Link>
@@ -126,7 +126,7 @@ export default function Home() {
           <h2 className="text-3xl font-semibold mb-6">Experience</h2>
           <Link
             href="/resume"
-            className="px-4 py-2 border rounded-md transition text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
+            className="px-4 py-2 border rounded-md text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
           >
             View resume
           </Link>

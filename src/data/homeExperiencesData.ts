@@ -10,7 +10,7 @@ type Experience = {
       year: '2024',
       details: [
         'Helped build an MVP google-calendar integrated tool to improve task management and scheduling.',
-        'I worked on the frontend and backend, using Supabase, Next.js, and Tailwind to build the applicaiton.',
+        'I worked on the frontend and backend, using Supabase, Next.js, and Tailwind to build the application.',
       ],
     },
     {

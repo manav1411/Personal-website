@@ -23,7 +23,7 @@ const projects: Project[] = [
     {
         title: 'MANTIS',
         year: '2025',
-        description: 'A lightweight, local email organistation tool',
+        description: 'A lightweight, local email organisation tool',
         sourceUrl: 'https://github.com/manav1411/MANTIS',
     },
     {

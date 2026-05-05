@@ -19,7 +19,7 @@ export default function ResumePage() {
   return (
     <main className="w-full" style={{ height }}>
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center z-10 bg-white">
+        <div className="absolute inset-0 flex items-center justify-center z-10 bg-white dark:bg-neutral-900">
           <p>the Resume will be loaded soon...</p>
         </div>
       )}
