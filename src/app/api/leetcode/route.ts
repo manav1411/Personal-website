@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DEFAULT_LEETCODE_USERNAME, getLeetCodeStats, LeetCodeError } from '@/services/leetcode';
+import { getLeetCodeStats, LeetCodeError } from '@/services/leetcode';
 
 // Always run per-request (no static caching) so the response reflects live
 // LeetCode data. Runs on the Cloudflare Workers Node.js runtime via OpenNext.
@@ -9,7 +9,7 @@ const USERNAME_PATTERN = /^[A-Za-z0-9_-]{1,40}$/;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const username = searchParams.get('username') ?? DEFAULT_LEETCODE_USERNAME;
+  const username = searchParams.get('username') ?? '';
 
   if (!USERNAME_PATTERN.test(username)) {
     return NextResponse.json(

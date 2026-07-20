@@ -2,7 +2,6 @@
 // LeetCode blocks cross-origin browser requests (CORS), so all fetching happens on the
 // server (see src/app/api/leetcode/route.ts).
 
-export const DEFAULT_LEETCODE_USERNAME = 'manav141';
 export type Difficulty = 'All' | 'Easy' | 'Medium' | 'Hard';
 
 export interface DifficultyCount {
@@ -86,7 +85,7 @@ function parseSubmissionCalendar(raw: unknown): Record<string, number> {
 
 // Fetch and normalise a user's public LeetCode profile from the upstream GraphQL API.
 export async function getLeetCodeStats(
-  username: string = DEFAULT_LEETCODE_USERNAME
+  username: string
 ): Promise<LeetCodeStats> {
   let res: Response;
   try {

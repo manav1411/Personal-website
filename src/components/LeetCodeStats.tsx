@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Flame, CheckCircle2, Trophy, ExternalLink, AlertTriangle } from 'lucide-react';
 import type { Difficulty, DifficultyCount, LeetCodeStats, RecentSubmission } from '@/services/leetcode';
@@ -217,12 +217,20 @@ interface LeetCodeStatsProps {
 
 export default function LeetCodeStats({ username }: LeetCodeStatsProps) {
   const profileUrl = `https://leetcode.com/u/${username}/`;
+  const cacheKey = `leetcode-stats:${username}`;
   const [stats, setStats] = useState<LeetCodeStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Whether something is already on screen, so a background revalidation never
+  // flashes the loading skeleton over already-displayed (cached) data.
+  const hasStatsRef = useRef(false);
+  useEffect(() => {
+    hasStatsRef.current = stats !== null;
+  }, [stats]);
+
   const load = useCallback(async () => {
-    setLoading(true);
+    if (!hasStatsRef.current) setLoading(true);
     setError(null);
     try {
       const res = await fetch(
@@ -233,17 +241,39 @@ export default function LeetCodeStats({ username }: LeetCodeStatsProps) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? `Request failed (${res.status})`);
       }
-      setStats((await res.json()) as LeetCodeStats);
+      const serialized = JSON.stringify((await res.json()) as LeetCodeStats);
+      // Only re-render (and rewrite the cache) when the data actually changed,
+      // so an unchanged profile stays visually static after the refetch.
+      setStats((prev) => {
+        if (prev && JSON.stringify(prev) === serialized) return prev;
+        try {
+          localStorage.setItem(cacheKey, serialized);
+        } catch {
+          // ignore unavailable/full storage
+        }
+        return JSON.parse(serialized) as LeetCodeStats;
+      });
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [username]);
+  }, [username, cacheKey]);
 
   useEffect(() => {
+    // Paint the last fetched stats instantly, then revalidate in the background.
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        setStats(JSON.parse(cached) as LeetCodeStats);
+        setLoading(false);
+        hasStatsRef.current = true;
+      }
+    } catch {
+      // ignore unavailable/corrupt storage
+    }
     load();
-  }, [load]);
+  }, [cacheKey, load]);
 
   const derived = useMemo(() => {
     if (!stats) return null;
@@ -274,13 +304,13 @@ export default function LeetCodeStats({ username }: LeetCodeStatsProps) {
 
   return (
     <section className="w-full max-w-4xl mt-12">
-      {loading && (
+      {!stats && loading && (
         <div
           className={`${cardClass} h-[4.5rem] animate-pulse bg-neutral-200 dark:bg-neutral-800`}
         />
       )}
 
-      {error && !loading && (
+      {!stats && !loading && error && (
         <div className={`${cardClass} p-4 flex items-center gap-3`}>
           <AlertTriangle size={18} className="text-amber-500 shrink-0" />
           <p className="text-sm text-neutral-600 dark:text-neutral-400">
@@ -295,7 +325,7 @@ export default function LeetCodeStats({ username }: LeetCodeStatsProps) {
         </div>
       )}
 
-      {stats && derived && !loading && !error && (
+      {stats && derived && (
         <div className={`${cardClass} px-4 py-3`}>
           <div className="flex items-center justify-between gap-x-6 gap-y-4 flex-wrap">
             {/* Profile */}
