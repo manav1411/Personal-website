@@ -72,7 +72,7 @@ const Navbar = () => {
             <Link
               href="/learn"
               className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm border rounded-md ${
-                pathname === "/learn"
+                pathname === "/learn" || pathname.startsWith("/learn/")
                   ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
                   : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
               }`}

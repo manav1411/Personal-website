@@ -1,11 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Flame, CheckCircle2, Trophy, ExternalLink, AlertTriangle } from 'lucide-react';
-import type { Difficulty, DifficultyCount, LeetCodeStats, RecentSubmission } from '@/services/leetcode';
+import type { Difficulty, RecentSubmission } from '@/services/leetcode';
+import { useLeetCodeStats } from '@/hooks/useLeetCodeStats';
+import {
+  DAY_SECONDS,
+  activeDaySet,
+  countByDifficulty,
+  currentStreak,
+  dayKeyForTimestamp,
+  solvedLast30,
+  todayUtcMidnight,
+} from '@/lib/leetcodeMetrics';
 
-const DAY_SECONDS = 86400;
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -26,42 +35,6 @@ const DIFFICULTY_META: Record<
     dot: 'bg-rose-500',
   },
 };
-
-function countByDifficulty(
-  list: DifficultyCount[] | undefined,
-  difficulty: Difficulty
-): number {
-  return list?.find((d) => d.difficulty === difficulty)?.count ?? 0;
-}
-
-function dayKeyForTimestamp(ts: number): string {
-  return String(Math.floor(ts / DAY_SECONDS) * DAY_SECONDS);
-}
-
-/** Unix seconds for today at UTC midnight. */
-function todayUtcMidnight(): number {
-  const now = new Date();
-  return Math.floor(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 1000
-  );
-}
-
-/** Consecutive days of activity ending today or yesterday; 0 if broken. */
-function currentStreak(active: Set<string>): number {
-  if (active.size === 0) return 0;
-  let cursor = todayUtcMidnight();
-  if (!active.has(String(cursor)) && active.has(String(cursor - DAY_SECONDS))) {
-    cursor -= DAY_SECONDS;
-  } else if (!active.has(String(cursor))) {
-    return 0;
-  }
-  let streak = 0;
-  while (active.has(String(cursor))) {
-    streak += 1;
-    cursor -= DAY_SECONDS;
-  }
-  return streak;
-}
 
 function levelClass(count: number, max: number): string {
   if (count <= 0) return 'bg-neutral-300 dark:bg-neutral-700/60';
@@ -213,77 +186,22 @@ const cardClass =
 
 interface LeetCodeStatsProps {
   username: string;
+  /** Square off the card's top-right corner (so a tab can sit flush above it). */
+  squareTopRight?: boolean;
 }
 
-export default function LeetCodeStats({ username }: LeetCodeStatsProps) {
+export default function LeetCodeStats({
+  username,
+  squareTopRight = false,
+}: LeetCodeStatsProps) {
   const profileUrl = `https://leetcode.com/u/${username}/`;
-  const cacheKey = `leetcode-stats:${username}`;
-  const [stats, setStats] = useState<LeetCodeStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Whether something is already on screen, so a background revalidation never
-  // flashes the loading skeleton over already-displayed (cached) data.
-  const hasStatsRef = useRef(false);
-  useEffect(() => {
-    hasStatsRef.current = stats !== null;
-  }, [stats]);
-
-  const load = useCallback(async () => {
-    if (!hasStatsRef.current) setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `/api/leetcode?username=${encodeURIComponent(username)}`,
-        { cache: 'no-store' }
-      );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? `Request failed (${res.status})`);
-      }
-      const serialized = JSON.stringify((await res.json()) as LeetCodeStats);
-      // Only re-render (and rewrite the cache) when the data actually changed,
-      // so an unchanged profile stays visually static after the refetch.
-      setStats((prev) => {
-        if (prev && JSON.stringify(prev) === serialized) return prev;
-        try {
-          localStorage.setItem(cacheKey, serialized);
-        } catch {
-          // ignore unavailable/full storage
-        }
-        return JSON.parse(serialized) as LeetCodeStats;
-      });
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }, [username, cacheKey]);
-
-  useEffect(() => {
-    // Paint the last fetched stats instantly, then revalidate in the background.
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        setStats(JSON.parse(cached) as LeetCodeStats);
-        setLoading(false);
-        hasStatsRef.current = true;
-      }
-    } catch {
-      // ignore unavailable/corrupt storage
-    }
-    load();
-  }, [cacheKey, load]);
+  const corner = squareTopRight ? 'rounded-tr-none' : '';
+  const { stats, loading, error, reload } = useLeetCodeStats(username);
 
   const derived = useMemo(() => {
     if (!stats) return null;
 
-    const activeDaySet = new Set(
-      Object.entries(stats.calendar.submissions)
-        .filter(([, value]) => value > 0)
-        .map(([key]) => key)
-    );
-    const streak = currentStreak(activeDaySet);
+    const streak = currentStreak(activeDaySet(stats.calendar.submissions));
 
     const solvedByDay: Record<string, RecentSubmission[]> = {};
     for (const submission of stats.recent) {
@@ -291,33 +209,29 @@ export default function LeetCodeStats({ username }: LeetCodeStatsProps) {
       (solvedByDay[key] ??= []).push(submission);
     }
 
-    const cutoff = Math.floor(Date.now() / 1000) - 30 * DAY_SECONDS;
-    const solvedLastMonth = new Set(
+    const { count: solvedLastMonth, capped: monthCapped } = solvedLast30(
       stats.recent
-        .filter((submission) => Number(submission.timestamp) >= cutoff)
-        .map((submission) => submission.titleSlug)
-    ).size;
-    const monthCapped = stats.recent.length >= 20 && solvedLastMonth >= 20;
+    );
 
     return { streak, solvedByDay, solvedLastMonth, monthCapped };
   }, [stats]);
 
   return (
-    <section className="w-full max-w-4xl mt-12">
+    <section className="w-full max-w-4xl">
       {!stats && loading && (
         <div
-          className={`${cardClass} h-[4.5rem] animate-pulse bg-neutral-200 dark:bg-neutral-800`}
+          className={`${cardClass} ${corner} h-[4.5rem] animate-pulse bg-neutral-200 dark:bg-neutral-800`}
         />
       )}
 
       {!stats && !loading && error && (
-        <div className={`${cardClass} p-4 flex items-center gap-3`}>
+        <div className={`${cardClass} ${corner} p-4 flex items-center gap-3`}>
           <AlertTriangle size={18} className="text-amber-500 shrink-0" />
           <p className="text-sm text-neutral-600 dark:text-neutral-400">
             Couldn&apos;t load LeetCode data — {error}
           </p>
           <button
-            onClick={() => load()}
+            onClick={() => reload()}
             className="ml-auto shrink-0 px-3 py-1.5 text-sm border rounded-md text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
           >
             Retry
@@ -326,7 +240,7 @@ export default function LeetCodeStats({ username }: LeetCodeStatsProps) {
       )}
 
       {stats && derived && (
-        <div className={`${cardClass} px-4 py-3`}>
+        <div className={`${cardClass} ${corner} px-4 py-3`}>
           <div className="flex items-center justify-between gap-x-6 gap-y-4 flex-wrap">
             {/* Profile */}
             <a
