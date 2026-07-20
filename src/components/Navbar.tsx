@@ -3,10 +3,10 @@ import { useTheme } from 'next-themes';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { FileText, FolderGit2, GraduationCap, BookOpen } from 'lucide-react';
+import { FileText, FolderGit2, GraduationCap, BookOpen, Sun, Moon } from 'lucide-react';
 
 const Navbar = () => {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
@@ -15,7 +15,7 @@ const Navbar = () => {
   }, []);
 
   const toggleDarkMode = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
   if (!mounted) return null;
@@ -85,22 +85,10 @@ const Navbar = () => {
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="inline-flex items-center justify-center transition"
-            style={{ fontSize: '1.5rem' }}
+            aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="inline-flex items-center justify-center text-neutral-900 dark:text-neutral-100 hover:text-blue-500 dark:hover:text-blue-400"
           >
-            <span
-              className="animate-spin"
-              style={{
-                display: 'inline-block',
-                animationDuration: '2s', // Slows down the spinning speed
-                filter:
-                  theme === 'dark'
-                    ? 'drop-shadow(0px 0px 12px rgba(255, 255, 0, 0.8))'
-                    : 'drop-shadow(0px 0px 12px rgba(0, 0, 0, 0.8))',
-              }}
-            >
-                  {theme === 'dark' ? '☀️' : '🌒'}
-            </span>
+            {resolvedTheme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
           </button>
         </div>
       </div>

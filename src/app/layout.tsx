@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ThemeProvider enableSystem={true} attribute="class">
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <div className="flex">
             <div className="flex-1 max-w-4xl mx-auto">
               <Navbar />

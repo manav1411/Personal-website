@@ -10,7 +10,7 @@ const projects: Project[] = [
     {
         title: 'Kairoto',
         year: '2026',
-        description: 'Determine the best time to go to a specific destination tuned based on how much you value specific factors! Also compare between different destinations!',
+        description: 'Determine the best time to go to a destination tuned based on how much you value specific factors.',
         sourceUrl: 'https://github.com/manav1411/kairoto',
         demoUrl: 'https://kairoto.app',
     },
