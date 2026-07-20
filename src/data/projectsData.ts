@@ -8,6 +8,13 @@ export interface Project {
 
 const projects: Project[] = [
     {
+        title: 'Kairoto',
+        year: '2026',
+        description: 'Determine the best time to go to a specific destination tuned based on how much you value specific factors! Also compare between different destinations!',
+        sourceUrl: 'https://github.com/manav1411/kairoto',
+        demoUrl: 'https://kairoto.app',
+    },
+    {
         title: 'SimplyServed',
         year: '2025',
         description: 'A full-stack self-hosted media server and management platform',
