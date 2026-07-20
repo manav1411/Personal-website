@@ -43,7 +43,7 @@ const Navbar = () => {
                   : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
               }`}
             >
-              Resume 📰
+              Resume
             </Link>
             <Link
               href="/projects"
@@ -53,7 +53,7 @@ const Navbar = () => {
                   : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
               }`}
             >
-              Projects 🚀
+              Projects
             </Link>
 <Link
               href="/university"
@@ -63,7 +63,7 @@ const Navbar = () => {
                   : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
               }`}
             >
-              University 🏛️
+              University
             </Link>
           </div>
 

@@ -10,11 +10,11 @@ export interface LabProject {
 
 const labProjects: LabProject[] = [
     {
-        title: 'TimeWell',
-        url: 'https://timewell.manavdodia.com',
-        tagline: 'Stop hoping. Start timing.',
-        description: 'learn about the best time to go to different places based on a multitude of factors and tailor the results to your taste and preferences. No sign-ups, no payments. A simple utility to use as you please :)',
-        status: 'coming-soon',
+        title: 'Kairoto',
+        url: 'https://kairoto.app',
+        tagline: 'When to go. Kairoto.',
+        description: 'Determine the best time to go to a specific destination tuned based on how much you value specific factors! Also compare between different destinations!',
+        status: 'live',
         year: '2026',
         emoji: '🏖️',
     },
