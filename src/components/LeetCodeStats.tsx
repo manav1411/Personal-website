@@ -1,0 +1,399 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
+import { Flame, CheckCircle2, Trophy, ExternalLink, AlertTriangle } from 'lucide-react';
+import type { Difficulty, DifficultyCount, LeetCodeStats, RecentSubmission } from '@/services/leetcode';
+
+const DAY_SECONDS = 86400;
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const DIFFICULTY_META: Record<
+  Exclude<Difficulty, 'All'>,
+  { text: string; dot: string }
+> = {
+  Easy: {
+    text: 'text-emerald-600 dark:text-emerald-400',
+    dot: 'bg-emerald-500',
+  },
+  Medium: {
+    text: 'text-amber-600 dark:text-amber-400',
+    dot: 'bg-amber-500',
+  },
+  Hard: {
+    text: 'text-rose-600 dark:text-rose-400',
+    dot: 'bg-rose-500',
+  },
+};
+
+function countByDifficulty(
+  list: DifficultyCount[] | undefined,
+  difficulty: Difficulty
+): number {
+  return list?.find((d) => d.difficulty === difficulty)?.count ?? 0;
+}
+
+function dayKeyForTimestamp(ts: number): string {
+  return String(Math.floor(ts / DAY_SECONDS) * DAY_SECONDS);
+}
+
+/** Unix seconds for today at UTC midnight. */
+function todayUtcMidnight(): number {
+  const now = new Date();
+  return Math.floor(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 1000
+  );
+}
+
+/** Consecutive days of activity ending today or yesterday; 0 if broken. */
+function currentStreak(active: Set<string>): number {
+  if (active.size === 0) return 0;
+  let cursor = todayUtcMidnight();
+  if (!active.has(String(cursor)) && active.has(String(cursor - DAY_SECONDS))) {
+    cursor -= DAY_SECONDS;
+  } else if (!active.has(String(cursor))) {
+    return 0;
+  }
+  let streak = 0;
+  while (active.has(String(cursor))) {
+    streak += 1;
+    cursor -= DAY_SECONDS;
+  }
+  return streak;
+}
+
+function levelClass(count: number, max: number): string {
+  if (count <= 0) return 'bg-neutral-300 dark:bg-neutral-700/60';
+  const ratio = max > 0 ? count / max : 0;
+  if (ratio > 0.66) return 'bg-emerald-600 dark:bg-emerald-500';
+  if (ratio > 0.33) return 'bg-emerald-500 dark:bg-emerald-600';
+  if (ratio > 0.12) return 'bg-emerald-400 dark:bg-emerald-700';
+  return 'bg-emerald-300 dark:bg-emerald-800';
+}
+
+function formatDay(ts: number): string {
+  const date = new Date(ts * 1000);
+  return `${WEEKDAYS[date.getUTCDay()]}, ${
+    MONTHS[date.getUTCMonth()]
+  } ${date.getUTCDate()}`;
+}
+
+interface SubmissionHeatmapProps {
+  submissions: Record<string, number>;
+  solvedByDay: Record<string, RecentSubmission[]>;
+}
+
+function SubmissionHeatmap({
+  submissions,
+  solvedByDay,
+}: SubmissionHeatmapProps) {
+  const [hovered, setHovered] = useState<number | null>(null);
+
+  // 30 cells, oldest (index 0) -> today (index 29). Rendered row-major in a
+  // 10-column grid, so the bottom row holds the most recent 10 days and today
+  // lands in the bottom-right corner.
+  const { cells, max } = useMemo(() => {
+    const today = todayUtcMidnight();
+    const arr: { key: string; ts: number; count: number }[] = [];
+    let highestCount = 0;
+    for (let i = 29; i >= 0; i -= 1) {
+      const ts = today - i * DAY_SECONDS;
+      const count = submissions[String(ts)] ?? 0;
+      if (count > highestCount) highestCount = count;
+      arr.push({ key: String(ts), ts, count });
+    }
+    return { cells: arr, max: highestCount };
+  }, [submissions]);
+
+  return (
+    <div
+      className="relative flex flex-col gap-[3px] w-fit"
+      onMouseLeave={() => setHovered(null)}
+    >
+      {[0, 1, 2].map((row) => (
+        <div key={row} className="flex gap-[3px]">
+          {cells.slice(row * 10, row * 10 + 10).map((cell, col) => {
+            const index = row * 10 + col;
+            const problems = solvedByDay[cell.key] ?? [];
+            const anchor = col >= 5 ? 'right-0' : 'left-0';
+            return (
+              <div key={cell.key} className="relative">
+                <button
+                  type="button"
+                  aria-label={`${problems.length} solved on ${formatDay(
+                    cell.ts
+                  )}`}
+                  onMouseEnter={() => setHovered(index)}
+                  onFocus={() => setHovered(index)}
+                  className={`block w-3 h-3 rounded-[2px] transition-transform ${levelClass(
+                    cell.count,
+                    max
+                  )} ${
+                    problems.length > 0
+                      ? 'ring-1 ring-inset ring-black/25 dark:ring-white/30'
+                      : ''
+                  } ${
+                    hovered === index
+                      ? 'relative z-10 scale-125 outline outline-1 outline-blue-500'
+                      : 'hover:scale-110'
+                  }`}
+                />
+                {hovered === index && (
+                  <div
+                    className={`absolute top-full ${anchor} z-30 mt-1.5 w-52 pointer-events-none`}
+                  >
+                    <div className="p-2.5 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 shadow-lg">
+                      <div className="flex items-baseline justify-between gap-2 mb-1">
+                        <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                          {formatDay(cell.ts)}
+                        </span>
+                        {problems.length > 0 && (
+                          <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 shrink-0">
+                            {problems.length} solved
+                          </span>
+                        )}
+                      </div>
+                      {problems.length > 0 ? (
+                        <ul className="space-y-0.5">
+                          {problems.slice(0, 6).map((submission, index) => (
+                            <li
+                              key={`${submission.titleSlug}-${index}`}
+                              className="text-xs text-neutral-700 dark:text-neutral-300 truncate"
+                            >
+                              {submission.title}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                          {cell.count > 0
+                            ? 'Submitted, no solve on record.'
+                            : 'No activity.'}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Stat({
+  icon,
+  value,
+  label,
+}: {
+  icon: ReactNode;
+  value: ReactNode;
+  label: string;
+}) {
+  return (
+    <div className="flex flex-col items-center">
+      <span className="flex items-center gap-1.5">
+        {icon}
+        <span className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tabular-nums leading-none">
+          {value}
+        </span>
+      </span>
+      <span className="text-[10px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 mt-1.5">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+const cardClass =
+  'dark:bg-neutral-800 border border-neutral-400 dark:border-neutral-500 rounded-md shadow-md dark:shadow-neutral-800/50';
+
+interface LeetCodeStatsProps {
+  username: string;
+}
+
+export default function LeetCodeStats({ username }: LeetCodeStatsProps) {
+  const profileUrl = `https://leetcode.com/u/${username}/`;
+  const [stats, setStats] = useState<LeetCodeStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/leetcode?username=${encodeURIComponent(username)}`,
+        { cache: 'no-store' }
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? `Request failed (${res.status})`);
+      }
+      setStats((await res.json()) as LeetCodeStats);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, [username]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const derived = useMemo(() => {
+    if (!stats) return null;
+
+    const activeDaySet = new Set(
+      Object.entries(stats.calendar.submissions)
+        .filter(([, value]) => value > 0)
+        .map(([key]) => key)
+    );
+    const streak = currentStreak(activeDaySet);
+
+    const solvedByDay: Record<string, RecentSubmission[]> = {};
+    for (const submission of stats.recent) {
+      const key = dayKeyForTimestamp(Number(submission.timestamp));
+      (solvedByDay[key] ??= []).push(submission);
+    }
+
+    const cutoff = Math.floor(Date.now() / 1000) - 30 * DAY_SECONDS;
+    const solvedLastMonth = new Set(
+      stats.recent
+        .filter((submission) => Number(submission.timestamp) >= cutoff)
+        .map((submission) => submission.titleSlug)
+    ).size;
+    const monthCapped = stats.recent.length >= 20 && solvedLastMonth >= 20;
+
+    return { streak, solvedByDay, solvedLastMonth, monthCapped };
+  }, [stats]);
+
+  return (
+    <section className="w-full max-w-4xl mt-12">
+      {loading && (
+        <div
+          className={`${cardClass} h-[4.5rem] animate-pulse bg-neutral-200 dark:bg-neutral-800`}
+        />
+      )}
+
+      {error && !loading && (
+        <div className={`${cardClass} p-4 flex items-center gap-3`}>
+          <AlertTriangle size={18} className="text-amber-500 shrink-0" />
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            Couldn&apos;t load LeetCode data — {error}
+          </p>
+          <button
+            onClick={() => load()}
+            className="ml-auto shrink-0 px-3 py-1.5 text-sm border rounded-md text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {stats && derived && !loading && !error && (
+        <div className={`${cardClass} px-4 py-3`}>
+          <div className="flex items-center justify-between gap-x-6 gap-y-4 flex-wrap">
+            {/* Profile */}
+            <a
+              href={profileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-2.5 shrink-0"
+            >
+              {stats.profile.userAvatar && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={stats.profile.userAvatar}
+                  alt={`${stats.username} avatar`}
+                  className="w-10 h-10 rounded-full border border-neutral-300 dark:border-neutral-600"
+                />
+              )}
+              <div className="min-w-0 leading-tight">
+                <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-blue-500 dark:group-hover:text-blue-400 inline-flex items-center gap-1">
+                  @{stats.username}
+                  <ExternalLink size={11} />
+                </span>
+                {stats.profile.ranking != null && (
+                  <span className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                    <Trophy size={10} />
+                    Rank #{stats.profile.ranking.toLocaleString()}
+                  </span>
+                )}
+              </div>
+            </a>
+
+            {/* Heatmap (centre) */}
+            <div className="flex flex-col items-center gap-1 shrink-0">
+              <SubmissionHeatmap
+                submissions={stats.calendar.submissions}
+                solvedByDay={derived.solvedByDay}
+              />
+              <span className="text-[10px] tracking-wide text-neutral-400 dark:text-neutral-500">
+                Last 30 days
+              </span>
+            </div>
+
+            {/* Streak + completed */}
+            <div className="flex items-center gap-5 shrink-0">
+              <Stat
+                icon={<Flame size={16} className="text-orange-500" />}
+                value={derived.streak}
+                label="day streak"
+              />
+              <Stat
+                icon={<CheckCircle2 size={16} className="text-blue-500" />}
+                value={`${derived.solvedLastMonth}${
+                  derived.monthCapped ? '+' : ''
+                }`}
+                label="solved · 30d"
+              />
+            </div>
+
+            {/* Total solved + difficulty */}
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="text-right leading-tight">
+                <p className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tabular-nums">
+                  {countByDifficulty(stats.solved, 'All')}
+                  <span className="text-xs font-normal text-neutral-400 dark:text-neutral-500">
+                    {' '}
+                    /{' '}
+                    {countByDifficulty(
+                      stats.totalQuestions,
+                      'All'
+                    ).toLocaleString()}
+                  </span>
+                </p>
+                <p className="text-[10px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                  solved
+                </p>
+              </div>
+              <div className="flex flex-col gap-0.5 text-xs tabular-nums w-[5.5rem]">
+                {(['Easy', 'Medium', 'Hard'] as const).map((difficulty) => (
+                  <span
+                    key={difficulty}
+                    className="flex items-center gap-1.5 whitespace-nowrap"
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${DIFFICULTY_META[difficulty].dot}`}
+                    />
+                    <span className={DIFFICULTY_META[difficulty].text}>
+                      {difficulty}
+                    </span>
+                    <span className="font-semibold text-neutral-700 dark:text-neutral-300 ml-auto">
+                      {countByDifficulty(stats.solved, difficulty)}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}

@@ -1,18 +1,16 @@
 import { FC } from 'react';
-import ProjectCard from '@/components/ProjectCard';
-import projects from '@/data/projectsData';
+import LeetCodeStats from '@/components/LeetCodeStats';
 
 const LearnPage: FC = () => {
     return (
         <main className="">
             <header className="w-full max-w-4xl mb-16 mt-16">
                 <h1 className="text-5xl font-bold mb-4">
-                    Learn - hi!
+                    Learn
                 </h1>
             </header>
 
-
-
+            <LeetCodeStats username="manav141" />
 
             {/* Footer */}
             <footer className="mt-16 mb-5">
