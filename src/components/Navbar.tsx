@@ -3,6 +3,7 @@ import { useTheme } from 'next-themes';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { FileText, FolderGit2, GraduationCap, BookOpen } from 'lucide-react';
 
 const Navbar = () => {
   const { theme, setTheme } = useTheme();
@@ -37,33 +38,47 @@ const Navbar = () => {
           <div className="space-x-4">
             <Link
               href="/resume"
-              className={`px-4 py-2 border rounded-md ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm border rounded-md ${
                 pathname === "/resume"
                   ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
                   : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
               }`}
             >
+              <FileText size={16} />
               Resume
             </Link>
             <Link
               href="/projects"
-              className={`px-4 py-2 border rounded-md ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm border rounded-md ${
                 pathname === "/projects"
                   ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
                   : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
               }`}
             >
+              <FolderGit2 size={16} />
               Projects
             </Link>
-<Link
+            <Link
               href="/university"
-              className={`px-4 py-2 border rounded-md ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm border rounded-md ${
                 pathname === "/university"
                   ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
                   : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
               }`}
             >
+              <GraduationCap size={16} />
               University
+            </Link>
+            <Link
+              href="/learn"
+              className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm border rounded-md ${
+                pathname === "/learn"
+                  ? "bg-neutral-300 text-neutral-900 border-black dark:border-white dark:bg-neutral-700 dark:text-neutral-100"
+                  : "text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
+              }`}
+            >
+              <BookOpen size={16} />
+              Learn
             </Link>
           </div>
 
