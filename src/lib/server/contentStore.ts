@@ -38,28 +38,47 @@ function nonEmpty(value: unknown, max = MAX_STR): string | null {
   return s && s.trim().length > 0 ? s : null;
 }
 
-function normalizeSlide(input: unknown): Slide | null {
-  if (!input || typeof input !== 'object') return null;
-  const raw = input as Record<string, unknown>;
-  const title = nonEmpty(raw.title);
-  if (!title) return null;
+/**
+ * Convert a legacy slide ({ title, points, code, note }) into a Markdown string
+ * so content authored before the Markdown editor isn't lost on the first save.
+ */
+function legacySlideToMarkdown(raw: Record<string, unknown>): string {
+  const parts: string[] = [];
 
-  const slide: Slide = { title };
+  const title = nonEmpty(raw.title);
+  if (title) parts.push(`## ${title}`);
 
   if (Array.isArray(raw.points)) {
     const points = raw.points
       .slice(0, MAX_ARRAY)
       .map((p) => nonEmpty(p))
       .filter((p): p is string => p !== null);
-    if (points.length) slide.points = points;
+    if (points.length) parts.push(points.map((p) => `- ${p}`).join('\n'));
   }
+
   const code = str(raw.code, MAX_CODE);
-  if (code && code.trim().length) slide.code = code;
+  if (code && code.trim().length) parts.push('```\n' + code + '\n```');
 
   const note = nonEmpty(raw.note);
-  if (note) slide.note = note;
+  if (note) parts.push(`> ${note}`);
 
-  return slide;
+  return parts.join('\n\n');
+}
+
+function normalizeSlide(input: unknown): Slide | null {
+  // New format: a plain Markdown string, or an object with a `content` field.
+  if (typeof input === 'string') {
+    return input.trim().length ? { content: str(input, MAX_CODE) as string } : null;
+  }
+  if (!input || typeof input !== 'object') return null;
+  const raw = input as Record<string, unknown>;
+
+  const content = str(raw.content, MAX_CODE);
+  if (content && content.trim().length) return { content };
+
+  // Legacy format: rebuild the Markdown body from the old structured fields.
+  const legacy = legacySlideToMarkdown(raw);
+  return legacy.trim().length ? { content: legacy } : null;
 }
 
 function normalizeHomework(input: unknown): HomeworkProblem | null {
@@ -94,9 +113,11 @@ function normalizeWeek(input: unknown): Week | null {
   if (!input || typeof input !== 'object') return null;
   const raw = input as Record<string, unknown>;
 
-  const weekNumber = Number(raw.week);
-  if (!Number.isFinite(weekNumber)) return null;
-  const topic = nonEmpty(raw.topic) ?? `Week ${weekNumber}`;
+  // `week` only determines ordering here — normalizeWeeks renumbers the final
+  // list sequentially — so a missing/invalid value just sorts the week last.
+  const parsedWeek = Number(raw.week);
+  const weekNumber = Number.isFinite(parsedWeek) ? parsedWeek : Number.MAX_SAFE_INTEGER;
+  const topic = nonEmpty(raw.topic) ?? 'Untitled week';
 
   const slides = Array.isArray(raw.slides)
     ? raw.slides
@@ -126,8 +147,6 @@ function normalizeWeek(input: unknown): Week | null {
     homework,
   };
 
-  const summary = nonEmpty(raw.summary);
-  if (summary) week.summary = summary;
   if (tasks.length) week.tasks = tasks;
 
   return week;
@@ -140,7 +159,9 @@ export function normalizeWeeks(input: unknown): Week[] | null {
     .slice(0, MAX_ARRAY)
     .map(normalizeWeek)
     .filter((w): w is Week => w !== null)
-    .sort((a, b) => a.week - b.week);
+    .sort((a, b) => a.week - b.week)
+    // Weeks are iterative: renumber sequentially from list order (1, 2, 3, …).
+    .map((week, i) => ({ ...week, week: i + 1 }));
   return weeks;
 }
 

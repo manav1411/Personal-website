@@ -4,6 +4,8 @@ import CohortLeaderboard from '@/components/learn/CohortLeaderboard';
 import MockTimer from '@/components/learn/MockTimer';
 import cohort from '@/data/cohortData';
 import { getWeeks } from '@/lib/server/contentStore';
+import { FaYoutube } from 'react-icons/fa';
+import { ExternalLink } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +28,20 @@ const LearnPage = async () => {
             <section className="w-full max-w-4xl mt-12">
                 <h2 className="text-2xl font-semibold mb-4">Content</h2>
                 <WeekBoard weeks={weeks} />
+            </section>
+
+            <section className="w-full max-w-4xl mt-12">
+                <h2 className="text-2xl font-semibold mb-4">Resources</h2>
+                <a
+                    href="https://www.youtube.com/watch?v=0K_eZGS5NsU"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm border rounded-md text-neutral-900 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500 hover:bg-neutral-300 dark:hover:bg-neutral-700"
+                >
+                    <FaYoutube className="shrink-0 text-[#FF0000]" size={18} />
+                    Python for LeetCode
+                    <ExternalLink size={14} className="shrink-0 opacity-60" />
+                </a>
             </section>
 
             {/*

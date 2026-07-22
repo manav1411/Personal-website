@@ -13,17 +13,32 @@ import {
   ChevronDown,
   Save,
   LogOut,
-  GripVertical,
+  Loader2,
+  Circle,
+  ExternalLink,
 } from 'lucide-react';
 import type {
   HomeworkProblem,
-  ProblemDifficulty,
   Slide,
   Week,
   WeekTask,
 } from '@/lib/content';
+import type { LeetCodeProblem } from '@/lib/leetcode';
+import Markdown from '@/components/Markdown';
+import DifficultyBadge from '@/components/learn/DifficultyBadge';
 
-const DIFFICULTIES: ProblemDifficulty[] = ['Easy', 'Medium', 'Hard'];
+// Slides are authored as one Markdown document per week; a line containing only
+// `---` starts a new slide. These helpers convert between that text and the
+// Slide[] we store.
+const SLIDE_DIVIDER = /\n[ \t]*---[ \t]*\n/;
+
+function slidesToText(slides: Slide[]): string {
+  return slides.map((s) => s.content).join('\n---\n');
+}
+
+function textToSlides(text: string): Slide[] {
+  return text.split(SLIDE_DIVIDER).map((content) => ({ content }));
+}
 
 const inputClass =
   'w-full px-2.5 py-1.5 text-sm rounded-md border border-neutral-400 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-blue-500';
@@ -31,8 +46,6 @@ const labelClass =
   'block text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400 mb-1';
 const iconBtnClass =
   'inline-flex items-center justify-center p-1 rounded text-neutral-500 dark:text-neutral-400 hover:bg-neutral-300 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:pointer-events-none';
-const sectionBtnClass =
-  'inline-flex items-center gap-1 px-2.5 py-1 text-xs border rounded-md text-neutral-800 dark:text-neutral-200 border-neutral-400 dark:border-neutral-600 hover:bg-neutral-300 dark:hover:bg-neutral-700';
 
 function genTaskId(): string {
   const rand =
@@ -79,10 +92,11 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
   };
 
   const addWeek = () => {
-    const nextNumber = weeks.reduce((max, w) => Math.max(max, w.week), 0) + 1;
+    // `week` is assigned from list order on save; the value here is just a
+    // placeholder for the new (last) entry.
     setWeeks((prev) => [
       ...prev,
-      { week: nextNumber, topic: `Week ${nextNumber}`, slides: [], homework: [], tasks: [] },
+      { week: prev.length + 1, topic: '', slides: [], homework: [], tasks: [] },
     ]);
     setExpanded((prev) => new Set(prev).add(weeks.length));
   };
@@ -90,10 +104,13 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
   const save = async () => {
     setStatus({ kind: 'saving' });
     try {
+      // Week numbers are derived from list order (the first week is 1, the next
+      // is 2, …), so stamp them from the current order right before saving.
+      const ordered = weeks.map((w, i) => ({ ...w, week: i + 1 }));
       const res = await fetch('/api/admin/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ weeks }),
+        body: JSON.stringify({ weeks: ordered }),
       });
       if (res.ok) {
         const data = (await res.json()) as { weeks: Week[] };
@@ -119,7 +136,7 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
   return (
     <main className="flex min-h-screen flex-col items-center">
       {/* Sticky action bar */}
-      <div className="sticky top-0 z-10 w-full max-w-4xl mt-6 mb-6 flex items-center gap-3 py-3 bg-zinc-100/90 dark:bg-neutral-950/90 backdrop-blur">
+      <div className="sticky top-0 z-10 w-full max-w-4xl mt-6 mb-6 flex items-center gap-3 py-3">
         <h1 className="text-3xl font-bold">Admin</h1>
         <span className="text-sm text-neutral-500 dark:text-neutral-400">
           Editing the Learn page
@@ -172,10 +189,10 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
                 className="flex items-center gap-2 min-w-0 flex-1 text-left"
               >
                 <span className="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400 shrink-0">
-                  Week {week.week}
+                  Week {wi + 1}
                 </span>
                 <span className="truncate font-semibold text-neutral-900 dark:text-neutral-100">
-                  {week.topic}
+                  {week.topic || 'Untitled week'}
                 </span>
               </button>
               <button
@@ -201,7 +218,7 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
                 aria-label="Delete week"
                 className={`${iconBtnClass} hover:text-rose-500`}
                 onClick={() => {
-                  if (confirm(`Delete Week ${week.week} (${week.topic})?`)) {
+                  if (confirm(`Delete Week ${wi + 1}${week.topic ? ` (${week.topic})` : ''}?`)) {
                     setWeeks((prev) => prev.filter((_, i) => i !== wi));
                   }
                 }}
@@ -213,42 +230,15 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
             {expanded.has(wi) && (
               <div className="px-4 pb-4 border-t border-neutral-300 dark:border-neutral-700 pt-4 flex flex-col gap-5">
                 {/* Week meta */}
-                <div className="grid grid-cols-1 sm:grid-cols-[7rem_1fr] gap-3">
-                  <div>
-                    <label className={labelClass}>Week #</label>
-                    <input
-                      type="number"
-                      className={inputClass}
-                      value={week.week}
-                      onChange={(e) =>
-                        mutate((d) => {
-                          d[wi].week = Number(e.target.value);
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Topic</label>
-                    <input
-                      className={inputClass}
-                      value={week.topic}
-                      onChange={(e) =>
-                        mutate((d) => {
-                          d[wi].topic = e.target.value;
-                        })
-                      }
-                    />
-                  </div>
-                </div>
                 <div>
-                  <label className={labelClass}>Summary</label>
-                  <textarea
+                  <label className={labelClass}>Topic</label>
+                  <input
                     className={inputClass}
-                    rows={2}
-                    value={week.summary ?? ''}
+                    placeholder="e.g. Arrays & Hashing"
+                    value={week.topic}
                     onChange={(e) =>
                       mutate((d) => {
-                        d[wi].summary = e.target.value;
+                        d[wi].topic = e.target.value;
                       })
                     }
                   />
@@ -257,16 +247,14 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
                 {/* Slides */}
                 <SlidesEditor
                   slides={week.slides}
-                  onChange={(fn) => mutate((d) => fn(d[wi].slides))}
+                  onChange={(next) =>
+                    mutate((d) => {
+                      d[wi].slides = next;
+                    })
+                  }
                 />
 
-                {/* Homework */}
-                <HomeworkEditor
-                  problems={week.homework}
-                  onChange={(fn) => mutate((d) => fn(d[wi].homework))}
-                />
-
-                {/* Tasks */}
+                {/* Tasks (shown above homework on the Learn page) */}
                 <TasksEditor
                   tasks={week.tasks ?? []}
                   onChange={(fn) =>
@@ -275,6 +263,12 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
                       fn(d[wi].tasks as WeekTask[]);
                     })
                   }
+                />
+
+                {/* Homework */}
+                <HomeworkEditor
+                  problems={week.homework}
+                  onChange={(fn) => mutate((d) => fn(d[wi].homework))}
                 />
               </div>
             )}
@@ -301,108 +295,62 @@ function SlidesEditor({
   onChange,
 }: {
   slides: Slide[];
-  onChange: (fn: (draft: Slide[]) => void) => void;
+  onChange: (next: Slide[]) => void;
 }) {
+  const text = slidesToText(slides);
+  // Preview each non-empty slide separately so authors see exactly how the deck
+  // will paginate. Empty trailing chunks (while typing a divider) are hidden.
+  const previewSlides = text.split(SLIDE_DIVIDER);
+
   return (
     <section>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-          Slides ({slides.length})
+          Slides ({previewSlides.filter((s) => s.trim().length > 0).length})
         </h3>
-        <button
-          type="button"
-          className={sectionBtnClass}
-          onClick={() => onChange((d) => d.push({ title: 'New slide' }))}
-        >
-          <Plus size={13} />
-          Add slide
-        </button>
       </div>
-      <div className="flex flex-col gap-3">
-        {slides.map((slide, si) => (
-          <div
-            key={si}
-            className="border border-neutral-300 dark:border-neutral-700 rounded-md p-3 flex flex-col gap-2"
-          >
-            <div className="flex items-center gap-2">
-              <GripVertical size={14} className="text-neutral-400 shrink-0" />
-              <input
-                className={inputClass}
-                placeholder="Slide title"
-                value={slide.title}
-                onChange={(e) =>
-                  onChange((d) => {
-                    d[si].title = e.target.value;
-                  })
-                }
-              />
-              <button
-                type="button"
-                aria-label="Move slide up"
-                className={iconBtnClass}
-                disabled={si === 0}
-                onClick={() => onChange((d) => d.splice(si - 1, 0, d.splice(si, 1)[0]))}
-              >
-                <ChevronUp size={15} />
-              </button>
-              <button
-                type="button"
-                aria-label="Move slide down"
-                className={iconBtnClass}
-                disabled={si === slides.length - 1}
-                onClick={() => onChange((d) => d.splice(si + 1, 0, d.splice(si, 1)[0]))}
-              >
-                <ChevronDown size={15} />
-              </button>
-              <button
-                type="button"
-                aria-label="Delete slide"
-                className={`${iconBtnClass} hover:text-rose-500`}
-                onClick={() => onChange((d) => d.splice(si, 1))}
-              >
-                <Trash2 size={15} />
-              </button>
-            </div>
-            <div>
-              <label className={labelClass}>Bullet points (one per line)</label>
-              <textarea
-                className={inputClass}
-                rows={3}
-                value={(slide.points ?? []).join('\n')}
-                onChange={(e) =>
-                  onChange((d) => {
-                    d[si].points = e.target.value.split('\n');
-                  })
-                }
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Code (optional)</label>
-              <textarea
-                className={`${inputClass} font-mono`}
-                rows={slide.code ? 6 : 2}
-                value={slide.code ?? ''}
-                onChange={(e) =>
-                  onChange((d) => {
-                    d[si].code = e.target.value;
-                  })
-                }
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Speaker note (optional)</label>
-              <input
-                className={inputClass}
-                value={slide.note ?? ''}
-                onChange={(e) =>
-                  onChange((d) => {
-                    d[si].note = e.target.value;
-                  })
-                }
-              />
-            </div>
+      <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+        Write slides in Markdown. Put <code>---</code> on its own line to start a
+        new slide.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Editor */}
+        <div>
+          <label className={labelClass}>Markdown</label>
+          <textarea
+            className={`${inputClass} font-mono min-h-[24rem] leading-relaxed resize-y`}
+            placeholder={
+              '# Arrays & Hashing\n\nSome intro text.\n\n- point one\n- point two\n\n---\n\n## Example\n\n```py\nprint("hi")\n```'
+            }
+            value={text}
+            onChange={(e) => onChange(textToSlides(e.target.value))}
+          />
+        </div>
+        {/* Live preview */}
+        <div>
+          <label className={labelClass}>Preview</label>
+          <div className="min-h-[24rem] rounded-md border border-neutral-400 dark:border-neutral-600 bg-white dark:bg-neutral-900 p-3 overflow-y-auto flex flex-col gap-3">
+            {previewSlides.every((s) => s.trim().length === 0) ? (
+              <p className="text-sm text-neutral-400 dark:text-neutral-500 italic">
+                Nothing to preview yet.
+              </p>
+            ) : (
+              previewSlides.map((content, i) =>
+                content.trim().length === 0 ? null : (
+                  <div
+                    key={i}
+                    className="border border-neutral-200 dark:border-neutral-700 rounded-md p-3"
+                  >
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-500 mb-2">
+                      Slide {i + 1}
+                    </div>
+                    <Markdown>{content}</Markdown>
+                  </div>
+                )
+              )
+            )}
           </div>
-        ))}
+        </div>
       </div>
     </section>
   );
@@ -417,88 +365,151 @@ function HomeworkEditor({
   problems: HomeworkProblem[];
   onChange: (fn: (draft: HomeworkProblem[]) => void) => void;
 }) {
+  const [draft, setDraft] = useState('');
+  const [status, setStatus] = useState<{ loading?: boolean; error?: string }>(
+    {}
+  );
+
+  // Resolve a slug/URL to its real name + difficulty via LeetCode and append it.
+  // Called on paste (as soon as something lands in the box) and on Enter, so the
+  // admin never types a name or picks a difficulty by hand.
+  const addFromSlug = async (raw: string) => {
+    const value = raw.trim();
+    if (!value || status.loading) return;
+    setStatus({ loading: true });
+    try {
+      const res = await fetch(
+        `/api/admin/leetcode-problem?slug=${encodeURIComponent(value)}`
+      );
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setStatus({ error: data.error ?? 'Lookup failed' });
+        return;
+      }
+      const data = (await res.json()) as LeetCodeProblem;
+      let duplicate = false;
+      onChange((d) => {
+        if (d.some((p) => p.slug === data.titleSlug)) {
+          duplicate = true;
+          return;
+        }
+        d.push({
+          name: data.title,
+          slug: data.titleSlug,
+          difficulty: data.difficulty,
+        });
+      });
+      setDraft('');
+      setStatus(duplicate ? { error: 'Already added' } : {});
+    } catch {
+      setStatus({ error: 'Network error' });
+    }
+  };
+
   return (
     <section>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-          Homework ({problems.length})
-        </h3>
-        <button
-          type="button"
-          className={sectionBtnClass}
-          onClick={() =>
-            onChange((d) =>
-              d.push({ name: '', slug: '', difficulty: 'Easy' })
-            )
-          }
-        >
-          <Plus size={13} />
-          Add problem
-        </button>
-      </div>
-      <div className="flex flex-col gap-3">
-        {problems.map((problem, pi) => (
-          <div
-            key={pi}
-            className="border border-neutral-300 dark:border-neutral-700 rounded-md p-3 flex flex-col gap-2"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div>
-                <label className={labelClass}>Name</label>
-                <input
-                  className={inputClass}
-                  value={problem.name}
-                  onChange={(e) =>
-                    onChange((d) => {
-                      d[pi].name = e.target.value;
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Slug (leetcode.com/problems/…)</label>
-                <input
-                  className={inputClass}
-                  value={problem.slug}
-                  onChange={(e) =>
-                    onChange((d) => {
-                      d[pi].slug = e.target.value;
-                    })
-                  }
-                />
-              </div>
-            </div>
-            <div className="flex items-end gap-2">
-              <div className="w-32">
-                <label className={labelClass}>Difficulty</label>
-                <select
-                  className={inputClass}
-                  value={problem.difficulty}
-                  onChange={(e) =>
-                    onChange((d) => {
-                      d[pi].difficulty = e.target.value as ProblemDifficulty;
-                    })
-                  }
-                >
-                  {DIFFICULTIES.map((diff) => (
-                    <option key={diff} value={diff}>
-                      {diff}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button
-                type="button"
-                aria-label="Delete problem"
-                className={`${iconBtnClass} hover:text-rose-500 mb-1 ml-auto`}
-                onClick={() => onChange((d) => d.splice(pi, 1))}
+      <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-2">
+        Homework ({problems.length})
+      </h3>
+
+      {/* Preview: rows exactly as they render on the Learn page, plus controls */}
+      {problems.length > 0 && (
+        <div className="border border-neutral-300 dark:border-neutral-700 rounded-md overflow-hidden mb-2">
+          <ul>
+            {problems.map((problem, pi) => (
+              <li
+                key={problem.slug}
+                className="flex items-center gap-2.5 px-3 py-2 border-b border-neutral-300 dark:border-neutral-700 last:border-b-0"
               >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          </div>
-        ))}
+                <Circle
+                  size={16}
+                  className="text-neutral-300 dark:text-neutral-700 shrink-0"
+                />
+                <a
+                  href={`https://leetcode.com/problems/${problem.slug}/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-1.5 min-w-0 flex-1 text-sm text-neutral-800 dark:text-neutral-200 hover:text-blue-500 dark:hover:text-blue-400"
+                >
+                  <span className="truncate">{problem.name}</span>
+                  <ExternalLink size={11} className="shrink-0 opacity-60" />
+                </a>
+                <DifficultyBadge difficulty={problem.difficulty} />
+                <div className="flex items-center shrink-0 pl-1">
+                  <button
+                    type="button"
+                    aria-label="Move problem up"
+                    className={iconBtnClass}
+                    disabled={pi === 0}
+                    onClick={() =>
+                      onChange((d) => d.splice(pi - 1, 0, d.splice(pi, 1)[0]))
+                    }
+                  >
+                    <ChevronUp size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Move problem down"
+                    className={iconBtnClass}
+                    disabled={pi === problems.length - 1}
+                    onClick={() =>
+                      onChange((d) => d.splice(pi + 1, 0, d.splice(pi, 1)[0]))
+                    }
+                  >
+                    <ChevronDown size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Delete problem"
+                    className={`${iconBtnClass} hover:text-rose-500`}
+                    onClick={() => onChange((d) => d.splice(pi, 1))}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Add by slug/URL — resolves automatically on paste */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <input
+            className={inputClass}
+            placeholder="Paste a LeetCode slug or URL to add a problem…"
+            value={draft}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              if (status.error) setStatus({});
+            }}
+            onPaste={(e) => {
+              const text = e.clipboardData.getData('text');
+              if (text.trim()) {
+                e.preventDefault();
+                setDraft(text);
+                addFromSlug(text);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addFromSlug(draft);
+              }
+            }}
+          />
+          {status.loading && (
+            <Loader2
+              size={15}
+              className="animate-spin text-neutral-400 absolute right-2.5 top-1/2 -translate-y-1/2"
+            />
+          )}
+        </div>
       </div>
+      {status.error && (
+        <p className="mt-1 text-xs text-rose-500">{status.error}</p>
+      )}
     </section>
   );
 }
@@ -514,19 +525,9 @@ function TasksEditor({
 }) {
   return (
     <section>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-          Tasks ({tasks.length})
-        </h3>
-        <button
-          type="button"
-          className={sectionBtnClass}
-          onClick={() => onChange((d) => d.push({ id: genTaskId(), label: '' }))}
-        >
-          <Plus size={13} />
-          Add task
-        </button>
-      </div>
+      <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-2">
+        Tasks ({tasks.length})
+      </h3>
       <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
         Checkmark-able items (e.g. &quot;Sign up for a LeetCode account&quot;),
         tracked per user.
@@ -546,6 +547,24 @@ function TasksEditor({
             />
             <button
               type="button"
+              aria-label="Move task up"
+              className={iconBtnClass}
+              disabled={ti === 0}
+              onClick={() => onChange((d) => d.splice(ti - 1, 0, d.splice(ti, 1)[0]))}
+            >
+              <ChevronUp size={15} />
+            </button>
+            <button
+              type="button"
+              aria-label="Move task down"
+              className={iconBtnClass}
+              disabled={ti === tasks.length - 1}
+              onClick={() => onChange((d) => d.splice(ti + 1, 0, d.splice(ti, 1)[0]))}
+            >
+              <ChevronDown size={15} />
+            </button>
+            <button
+              type="button"
               aria-label="Delete task"
               className={`${iconBtnClass} hover:text-rose-500`}
               onClick={() => onChange((d) => d.splice(ti, 1))}
@@ -555,6 +574,14 @@ function TasksEditor({
           </div>
         ))}
       </div>
+      <button
+        type="button"
+        onClick={() => onChange((d) => d.push({ id: genTaskId(), label: '' }))}
+        className="mt-2 w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm border border-dashed rounded-md text-neutral-700 dark:text-neutral-300 border-neutral-400 dark:border-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+      >
+        <Plus size={16} />
+        Add task
+      </button>
     </section>
   );
 }

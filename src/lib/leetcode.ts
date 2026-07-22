@@ -72,6 +72,23 @@ const PROFILE_QUERY = /* GraphQL */ `
   }
 `;
 
+const QUESTION_QUERY = /* GraphQL */ `
+  query questionData($titleSlug: String!) {
+    question(titleSlug: $titleSlug) {
+      title
+      titleSlug
+      difficulty
+    }
+  }
+`;
+
+/** A single problem's public metadata, resolved from its slug. */
+export interface LeetCodeProblem {
+  title: string;
+  titleSlug: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+}
+
 export class LeetCodeError extends Error {
   status: number;
   constructor(message: string, status = 502) {
@@ -157,5 +174,78 @@ export async function getLeetCodeStats(
       ),
     },
     recent: json?.data?.recentAcSubmissionList ?? [],
+  };
+}
+
+/** Extract a problem slug from a raw slug or a full leetcode.com problem URL. */
+export function extractProblemSlug(input: string): string {
+  const trimmed = input.trim();
+  // Handle full URLs like https://leetcode.com/problems/two-sum/description/
+  const match = trimmed.match(/leetcode\.com\/problems\/([^/?#]+)/i);
+  const slug = (match ? match[1] : trimmed).trim().replace(/^\/+|\/+$/g, '');
+  return slug.toLowerCase();
+}
+
+/**
+ * Resolve a problem's canonical title + difficulty from its slug via the public
+ * GraphQL API. Slugs are lossy (e.g. `powx-n` -> "Pow(x, n)"), so this is the
+ * only reliable way to get the real name.
+ */
+export async function getLeetCodeProblem(
+  slug: string
+): Promise<LeetCodeProblem> {
+  let res: Response;
+  try {
+    res = await fetch(LEETCODE_GRAPHQL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Referer: 'https://leetcode.com',
+        'User-Agent':
+          'Mozilla/5.0 (compatible; PersonalWebsite/1.0; +https://manavdodia.com)',
+      },
+      body: JSON.stringify({
+        query: QUESTION_QUERY,
+        variables: { titleSlug: slug },
+      }),
+      cache: 'no-store',
+    });
+  } catch (err) {
+    throw new LeetCodeError(
+      `Failed to reach LeetCode: ${(err as Error).message}`,
+      502
+    );
+  }
+
+  if (!res.ok) {
+    throw new LeetCodeError(
+      `LeetCode responded with status ${res.status}`,
+      res.status === 404 ? 404 : 502
+    );
+  }
+
+  const json = await res.json();
+  if (json.errors) {
+    const message =
+      json.errors?.[0]?.message ?? 'Unknown error from LeetCode GraphQL';
+    throw new LeetCodeError(message, 502);
+  }
+
+  const question = json?.data?.question;
+  const title: unknown = question?.title;
+  const difficulty: unknown = question?.difficulty;
+  if (!question || typeof title !== 'string') {
+    throw new LeetCodeError(`No LeetCode problem found for "${slug}"`, 404);
+  }
+
+  const normalizedDifficulty: LeetCodeProblem['difficulty'] =
+    difficulty === 'Easy' || difficulty === 'Medium' || difficulty === 'Hard'
+      ? difficulty
+      : 'Easy';
+
+  return {
+    title,
+    titleSlug: typeof question.titleSlug === 'string' ? question.titleSlug : slug,
+    difficulty: normalizedDifficulty,
   };
 }

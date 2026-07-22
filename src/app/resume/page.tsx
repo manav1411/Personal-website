@@ -1,33 +1,28 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import dynamic from "next/dynamic";
+
+const ResumeViewer = dynamic(() => import("@/components/ResumeViewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-[70vh] items-center justify-center pt-16">
+      <p className="text-neutral-500 dark:text-neutral-400">Loading resume...</p>
+    </div>
+  ),
+});
 
 export default function ResumePage() {
-  const [loading, setLoading] = useState(true);
-  const [height, setHeight] = useState<number>(0);
-
-  useEffect(() => {
-    const updateHeight = () => {
-      const navbarHeight = 74; // adjust to your navbar
-      setHeight(window.innerHeight - navbarHeight);
-    };
-
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
-  }, []);
-
   return (
-    <main className="w-full" style={{ height }}>
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center z-10 bg-white dark:bg-neutral-900">
-          <p>the Resume will be loaded soon...</p>
-        </div>
-      )}
-      <iframe
-        src="./resume.pdf"
-        style={{ width: "100%", height: `${height}px`, border: "none" }}
-        onLoad={() => setLoading(false)}
-      />
+    <main className="w-full">
+      <ResumeViewer />
+
+      <footer className="mt-16 mb-5">
+        <p className="text-sm text-neutral-500 text-center">
+          Made with ✨, powered by ☕
+          <br />
+          by Manav Dodia
+        </p>
+      </footer>
     </main>
   );
 }

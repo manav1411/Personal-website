@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Slide } from '@/lib/content';
+import Markdown from '@/components/Markdown';
 
 export default function SlideDeck({ slides }: { slides: Slide[] }) {
   const [index, setIndex] = useState(0);
@@ -40,31 +41,9 @@ export default function SlideDeck({ slides }: { slides: Slide[] }) {
     <div className="flex flex-col flex-1 min-h-0">
       {/* Slide body — centered and large for presenting */}
       <div className="flex-1 min-h-0 overflow-y-auto flex flex-col justify-center">
-        <div className="w-full max-w-4xl mx-auto">
-          <h3 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
-            {slide.title}
-          </h3>
-
-          {slide.points && slide.points.length > 0 && (
-            <ul className="list-disc pl-6 space-y-3 text-lg sm:text-xl text-neutral-700 dark:text-neutral-300">
-              {slide.points.map((point, i) => (
-                <li key={i}>{point}</li>
-              ))}
-            </ul>
-          )}
-
-          {slide.code && (
-            <pre className="mt-6 p-4 rounded-md bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 overflow-x-auto font-mono text-sm sm:text-base text-neutral-800 dark:text-neutral-200">
-              <code>{slide.code}</code>
-            </pre>
-          )}
-
-          {slide.note && (
-            <p className="mt-6 text-base text-neutral-500 dark:text-neutral-400 italic border-l-2 border-neutral-300 dark:border-neutral-600 pl-3">
-              Speaker note: {slide.note}
-            </p>
-          )}
-        </div>
+        <Markdown className="w-full max-w-4xl mx-auto prose-lg sm:prose-xl">
+          {slide.content}
+        </Markdown>
       </div>
 
       {/* Controls */}

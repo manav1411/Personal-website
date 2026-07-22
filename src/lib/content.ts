@@ -6,11 +6,12 @@
 export type ProblemDifficulty = 'Easy' | 'Medium' | 'Hard';
 
 export interface Slide {
-  title: string;
-  points?: string[];
-  code?: string;
-  /** A speaker note, shown under the slide (not on the projector-friendly body). */
-  note?: string;
+  /**
+   * The full body of a single slide, authored as Markdown. Slides are separated
+   * in the editor by a line containing only `---`; each resulting chunk becomes
+   * one slide's `content`.
+   */
+  content: string;
 }
 
 export interface HomeworkProblem {
@@ -30,9 +31,12 @@ export interface WeekTask {
 }
 
 export interface Week {
+  /**
+   * 1-based position of the week. This mirrors the ordering in the editor (the
+   * first week is 1, the next is 2, …) and is assigned from list order on save.
+   */
   week: number;
   topic: string;
-  summary?: string;
   slides: Slide[];
   homework: HomeworkProblem[];
   tasks?: WeekTask[];
