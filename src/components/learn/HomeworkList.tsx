@@ -161,7 +161,7 @@ export default function HomeworkList({
         <div className="border border-neutral-300 dark:border-neutral-700 rounded-md overflow-hidden">
           <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-300 dark:border-neutral-700 bg-neutral-200/60 dark:bg-neutral-800/60">
             <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-              {problems.length} problems · aim for ~3 hours
+              problems
             </span>
             {personalised && (
               <span className="text-xs tabular-nums text-emerald-600 dark:text-emerald-400">
