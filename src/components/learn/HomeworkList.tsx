@@ -1,8 +1,8 @@
 'use client';
 
-// A week's homework, personalised: problems the current user has recently solved
-// show a green tick, the rest are "to do". Solved detection comes from the user's
-// recent-AC feed, so it reflects their most recent ~20 accepted submissions.
+// A week's homework, personalised: problems the current user has solved show a
+// green tick, the rest are "to do". Solved detection comes from the accumulated
+// solve history (KV), falling back to the live recent-AC feed.
 
 import { ExternalLink, CheckCircle2, Circle } from 'lucide-react';
 import type { HomeworkProblem, WeekTask } from '@/lib/content';

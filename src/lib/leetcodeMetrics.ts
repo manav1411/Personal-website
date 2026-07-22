@@ -6,7 +6,6 @@ import type {
   Difficulty,
   DifficultyCount,
   LeetCodeStats,
-  RecentSubmission,
   SolvedProblem,
 } from '@/lib/leetcode';
 
@@ -97,7 +96,15 @@ export function solvedLast30(
   return { count, capped: !accurate && count >= 20 };
 }
 
-/** Slugs of problems in the recent-AC feed, for "recently solved" homework badges. */
-export function recentlySolvedSlugs(recent: RecentSubmission[]): Set<string> {
-  return new Set(recent.map((submission) => submission.titleSlug));
+/**
+ * Every slug the user has solved, from a day -> solves map. Backed by the
+ * accumulated KV history when available (so it isn't limited to the last ~20
+ * accepted submissions), else the live feed. Powers the homework "solved" ticks.
+ */
+export function solvedSlugs(solvedByDay: SolvedByDay): Set<string> {
+  const slugs = new Set<string>();
+  for (const list of Object.values(solvedByDay)) {
+    for (const problem of list) slugs.add(problem.titleSlug);
+  }
+  return slugs;
 }

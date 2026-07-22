@@ -1,15 +1,15 @@
 'use client';
 
 // The curriculum as a left-to-right board of weeks (5 across on wide screens).
-// Fetches the selected user's recent solves once and passes them down so each
-// week shows the user's progress.
+// Fetches the selected user's solves once and passes them down so each week
+// shows the user's progress.
 
 import { useMemo } from 'react';
 import type { Week } from '@/lib/content';
 import { useLearnUsername } from '@/hooks/useLearnUsername';
 import { useLeetCodeStats } from '@/hooks/useLeetCodeStats';
 import { useTaskProgress } from '@/hooks/useTaskProgress';
-import { recentlySolvedSlugs } from '@/lib/leetcodeMetrics';
+import { buildSolvedByDay, solvedSlugs } from '@/lib/leetcodeMetrics';
 import WeekCard from './WeekCard';
 
 export default function WeekBoard({ weeks }: { weeks: Week[] }) {
@@ -17,8 +17,10 @@ export default function WeekBoard({ weeks }: { weeks: Week[] }) {
   const { stats } = useLeetCodeStats(username || '');
   const { tasks: taskProgress, toggleTask } = useTaskProgress(username || '');
 
-  const solvedSlugs = useMemo(
-    () => (stats ? recentlySolvedSlugs(stats.recent) : new Set<string>()),
+  // Solved detection uses the accumulated solve history (falling back to the
+  // live feed), so it isn't capped at the last ~20 accepted submissions.
+  const solved = useMemo(
+    () => (stats ? solvedSlugs(buildSolvedByDay(stats)) : new Set<string>()),
     [stats]
   );
 
@@ -28,7 +30,7 @@ export default function WeekBoard({ weeks }: { weeks: Week[] }) {
         <WeekCard
           key={week.week}
           week={week}
-          solvedSlugs={solvedSlugs}
+          solvedSlugs={solved}
           personalised={Boolean(username)}
           taskProgress={taskProgress}
           onToggleTask={toggleTask}
