@@ -5,3 +5,4 @@ node_modules
 .wrangler
 .dev.vars
 cloudflare-env.d.ts
+.DS_Store

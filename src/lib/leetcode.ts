@@ -1,6 +1,4 @@
 // Server-side helpers for fetching live LeetCode data via the public GraphQL API.
-// LeetCode blocks cross-origin browser requests (CORS), so all fetching happens on the
-// server (see src/app/api/leetcode/route.ts).
 
 export type Difficulty = 'All' | 'Easy' | 'Medium' | 'Hard';
 
@@ -15,6 +13,12 @@ export interface RecentSubmission {
   timestamp: string;
 }
 
+/** A solved problem stored in the accumulated per-day history (no timestamp). */
+export interface SolvedProblem {
+  title: string;
+  titleSlug: string;
+}
+
 /** Normalised shape returned to the client. */
 export interface LeetCodeStats {
   username: string;
@@ -27,6 +31,13 @@ export interface LeetCodeStats {
   // Map of unix-second (UTC midnight) -> submission count for that day.
   calendar: { submissions: Record<string, number> };
   recent: RecentSubmission[];
+  /**
+   * Accumulated per-day solve history, keyed by UTC-midnight unix seconds and
+   * built up in KV across fetches to see past LeetCode's 20-item recent-AC cap.
+   * Absent when the KV store is unavailable — callers fall back to deriving days
+   * from `recent`.
+   */
+  solvedDays?: Record<string, SolvedProblem[]>;
 }
 
 const LEETCODE_GRAPHQL = 'https://leetcode.com/graphql';

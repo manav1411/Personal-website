@@ -1,11 +1,26 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "main": ".open-next/worker.js",
-  "name": "personal-website",
-  "compatibility_date": "2024-12-30",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"main": ".open-next/worker.js",
+	"name": "personal-website",
+	"compatibility_date": "2024-12-30",
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	// Editable /learn content (content:weeks) and per-user task progress
+	// (progress:<username>). Create the namespace once with:
+	//   npx wrangler kv namespace create LEARN_KV
+	// then paste the printed id below (replace REPLACE_WITH_KV_NAMESPACE_ID).
+	// Local `next dev` works without a real id via Miniflare's local KV.
+	"kv_namespaces": [
+		{
+			"binding": "LEARN_KV",
+			"id": "9cb4e1b2ee02481c888fd9a647c7fc95",
+			"remote": true
+		}
+	]
 }
