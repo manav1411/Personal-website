@@ -4,37 +4,69 @@ const week01: Week = {
   week: 1,
   topic: 'Binary Search',
   summary:
-    'Trading a linear scan for a logarithmic one, and the mental model that unlocks "binary search on the answer".',
+    'Trading a linear scan for a logarithmic one, and getting back into hand-coding mode.',
   slides: [
+    {
+      title: 'Binary Search',
+      points: [
+        'Week 1 — write the algorithm, rebuild the habit, and see if this course fits.',
+      ],
+    },
     {
       title: 'By the end you can…',
       points: [
-        'Write a bug-free binary search from memory (boundaries and termination).',
-        'Explain why the loop is O(log n) and when it applies.',
-        'Recognise a monotonic answer space and binary-search over it.',
-        "Use Python's bisect module instead of hand-rolling when appropriate.",
+        'Understand and write the binary search algorithm.',
+        'Restore your hand-coding muscles a bit.',
+        'Re-familiarise yourself with Python.',
+        'Know if this content is useful for you.',
       ],
     },
     {
-      title: 'Why binary search?',
+      title: 'Why this course?',
       points: [
-        'Linear scan checks every element: O(n).',
-        'If the data is sorted, each comparison eliminates half the remaining space.',
-        'log2(1,000,000) is about 20 — twenty steps instead of a million.',
+        'AI can already do what juniors do — great as a senior accelerator, risky as a junior crutch.',
+        'If we lean on it too hard, we stop building skills beyond QA.',
+        'Going back to DSA puts us in "thinking" mode again.',
+        'You may never ship a greedy algorithm at work — the payoff is the problem-solving muscle.',
       ],
-      note: 'Anchor the intuition with a phone-book / guess-the-number analogy before any code.',
+      note:
+        "There are quite a few reasons. In the world of AI coding, AI can do everything we as juniors can do. As a senior — this is fantastic and acts as an accelerator. But as juniors, we have to be careful — we're still developing our fundamental skills and if we rely too heavily on AI as a crutch we won't end up developing skills besides quality assurance. So I think going back to our roots, re-learning DSA is a good way to get back into that 'thinking' mode. Of course, you probably won't encounter a situation as a dev where you need to implement a greedy algorithm — but it's all about developing the muscles to problem solve better — that will set you apart.",
     },
     {
-      title: 'The invariant',
+      title: 'Prerequisites',
       points: [
-        'Maintain a range [lo, hi] that must contain the answer if it exists.',
-        'Each step shrinks the range while preserving that promise.',
-        'Terminate when the range is empty (lo > hi).',
+        'Some Python knowledge (you can pick it up along the way).',
+        'A LeetCode account.',
+        'Consistency.',
       ],
     },
     {
-      title: 'The classic template',
-      code: `def binary_search(nums, target):
+      title: 'Intuition and pseudocode',
+      points: [
+        'Sorted input (or a monotonic answer space) lets each comparison discard half the range.',
+        'Keep a window [lo, hi] that still might contain the answer.',
+        'Probe the middle; move lo or hi past mid; repeat until the window is empty.',
+        'log₂(1,000,000) ≈ 20 — twenty checks instead of a million.',
+      ],
+      code: `# find target in a sorted array, or -1
+lo, hi = 0, n - 1
+while lo <= hi:
+    mid = (lo + hi) // 2
+    if nums[mid] == target: return mid
+    if nums[mid] < target:  lo = mid + 1
+    else:                    hi = mid - 1
+return -1`,
+      note: 'Phone-book / guess-the-number analogy before diving into code.',
+    },
+    {
+      title: 'Worked example: 704. Binary Search',
+      points: [
+        'Given a sorted array of distinct ints, return the index of target, or -1.',
+        'Classic closed interval: loop while lo <= hi; always step mid ± 1.',
+        'Bug magnets: off-by-one on the loop condition, and forgetting to move past mid.',
+        'Trace live on [], [5], and a mid-sized array before coding on LeetCode.',
+      ],
+      code: `def search(nums, target):
     lo, hi = 0, len(nums) - 1
     while lo <= hi:
         mid = (lo + hi) // 2
@@ -45,48 +77,7 @@ const week01: Week = {
         else:
             hi = mid - 1
     return -1`,
-      note: 'Walk the two bug sources live: the <= vs < in the loop, and mid +/- 1.',
-    },
-    {
-      title: 'The real superpower: search on the answer',
-      points: [
-        'You do not need a sorted array — you need a monotonic yes/no test.',
-        'If feasible(x) is False for small x and True for large x, binary-search the boundary.',
-        'Turns "minimum/maximum such that …" problems into O(n log range).',
-      ],
-      code: `def lower_bound(lo, hi, feasible):
-    while lo < hi:
-        mid = (lo + hi) // 2
-        if feasible(mid):
-            hi = mid
-        else:
-            lo = mid + 1
-    return lo`,
-    },
-    {
-      title: 'Pythonic shortcut: bisect',
-      code: `import bisect
-i = bisect.bisect_left(nums, target)   # leftmost insertion point
-found = i < len(nums) and nums[i] == target`,
-      note: 'Great once they can write it by hand — shows language fluency.',
-    },
-    {
-      title: 'Worked example: Search in Rotated Sorted Array',
-      points: [
-        'Even rotated, at any mid one half [lo..mid] or [mid..hi] is still sorted.',
-        'Check which half is sorted by comparing nums[lo] with nums[mid].',
-        "If the target is inside the sorted half's range, search there; else the other half.",
-        'The halving property holds, so it stays O(log n).',
-      ],
-    },
-    {
-      title: 'Worked example: Koko Eating Bananas',
-      points: [
-        'Brute force tries every speed from 1 to max(piles): too slow.',
-        'If speed k works, any speed > k also works — feasibility is monotonic.',
-        'Binary-search k over [1, max(piles)] with feasible(k) = sum(ceil(pile/k)) <= h.',
-        'O(n log(max pile)) — the constraints basically demand a log approach.',
-      ],
+      note: 'Live-code this from a blank file; only reveal the template if someone gets stuck.',
     },
   ],
   homework: [
