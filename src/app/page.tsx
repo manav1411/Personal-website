@@ -20,15 +20,15 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col pt-16">
-      <div className="flex">
+      <div className="flex flex-col-reverse md:flex-row md:items-start gap-8 md:gap-4 mb-16">
         {/* Header Section */}
-        <header className="w-full max-w-4xl mb-16 mt-20">
-          <h1 className="text-6xl font-bold mb-4">
-            Hi, I'm Manav
+        <header className="w-full max-w-4xl md:mt-20 min-w-0">
+          <h1 className="text-4xl sm:text-6xl font-bold mb-4">
+            Hi, I&apos;m Manav
           </h1>
 
           <p className="text-lg">
-          I'm a Software Engineer / Security Engineer. <br /> A bit of everything
+          I&apos;m a Software Engineer / Security Engineer. <br /> A bit of everything
             <br />
 
           </p>
@@ -66,28 +66,28 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Profile Picture */}
-        <div className="relative w-[468px] h-[500px]">
+        {/* Profile Picture — capped width so it never forces page zoom-out on mobile */}
+        <div className="relative w-full max-w-[280px] sm:max-w-[360px] md:max-w-[468px] mx-auto md:mx-0 aspect-[468/500] shrink-0">
           <Image
             src="/manav.png"
             alt="a photograph of me"
-            width={208 * 2.25}
-            height={302 * 2.25}
-            className={`rounded-md mb-8 absolute ${
+            fill
+            sizes="(max-width: 768px) 280px, (max-width: 1024px) 360px, 468px"
+            className={`rounded-md object-cover ${
               isHovered ? "opacity-0" : "opacity-100"
             }`}
           />
           <Image
             src="/manavAnime.png"
             alt="an Anime illustration of me"
-            width={208 * 2.25}
-            height={302 * 2.25}
-            className={`rounded-md mb-8 absolute ${
+            fill
+            sizes="(max-width: 768px) 280px, (max-width: 1024px) 360px, 468px"
+            className={`rounded-md object-cover ${
               isHovered ? "opacity-100" : "opacity-0"
             }`}
           />
           <div
-            className="absolute w-full h-full"
+            className="absolute inset-0"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           />

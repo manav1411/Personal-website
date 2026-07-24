@@ -4,7 +4,7 @@
 // time with arrow-key navigation. The modal owns the frame and Escape-to-close;
 // this fills the available space and renders the current slide + prev/next.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Slide } from '@/lib/content';
 import Markdown from '@/components/Markdown';
@@ -21,11 +21,17 @@ export default function SlideDeck({
   const clampedStart =
     count <= 0 ? 0 : Math.min(Math.max(Math.floor(initialIndex), 0), count - 1);
   const [index, setIndex] = useState(clampedStart);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Remount-safe: if the deck is reopened at a different topic jump, sync.
   useEffect(() => {
     setIndex(clampedStart);
   }, [clampedStart]);
+
+  // Always start a new slide scrolled to the top.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 });
+  }, [index]);
 
   const go = useCallback(
     (delta: number) => setIndex((i) => Math.min(Math.max(i + delta, 0), count - 1)),
@@ -53,11 +59,17 @@ export default function SlideDeck({
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      {/* Slide body — centered and large for presenting */}
-      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col justify-center">
-        <Markdown className="w-full max-w-4xl mx-auto prose-lg sm:prose-xl">
-          {slide.content}
-        </Markdown>
+      {/*
+        Scroll lives here. Inner min-h-full + justify-center centers short
+        slides; when content overflows, the flex column grows past the
+        viewport so scroll starts at the top (no clipped heading).
+      */}
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+        <div className="min-h-full flex flex-col justify-center py-2">
+          <Markdown className="w-full max-w-4xl mx-auto prose-lg sm:prose-xl">
+            {slide.content}
+          </Markdown>
+        </div>
       </div>
 
       {/* Controls */}

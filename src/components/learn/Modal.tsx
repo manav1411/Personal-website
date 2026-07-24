@@ -69,7 +69,11 @@ export default function Modal({
           </button>
         </div>
         <div
-          className={fullscreen ? 'flex-1 min-h-0 overflow-y-auto p-6 flex flex-col' : 'p-4'}
+          className={
+            fullscreen
+              ? 'flex-1 min-h-0 overflow-hidden p-6 flex flex-col'
+              : 'p-4'
+          }
         >
           {children}
         </div>

@@ -23,7 +23,17 @@ export default function ResumeViewer() {
     const container = containerRef.current;
     if (!container) return;
 
-    const updateWidth = () => setPageWidth(Math.min(container.clientWidth, 768));
+    const updateWidth = () => {
+      // Floor + ignore sub-pixel churn so ResizeObserver doesn't fight the
+      // canvas (which can look like a slow zoom into the top-left).
+      // Leave room for the 1px border on each side so the canvas can't
+      // overflow and trigger mobile browser zoom-out.
+      const next = Math.max(
+        Math.min(Math.floor(container.clientWidth) - 2, 768),
+        0,
+      );
+      setPageWidth((prev) => (prev === next ? prev : next));
+    };
 
     updateWidth();
 
@@ -33,8 +43,8 @@ export default function ResumeViewer() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-6 pb-8 pt-16">
-      <div ref={containerRef} className="w-full">
+    <div className="flex flex-col gap-6 pb-8 pt-16 min-w-0">
+      <div ref={containerRef} className="w-full min-w-0 max-w-full">
         {loading && !error && (
           <div className="flex min-h-[70vh] items-center justify-center">
             <p className="text-neutral-500 dark:text-neutral-400">
@@ -57,7 +67,7 @@ export default function ResumeViewer() {
           </div>
         )}
 
-        {pageWidth !== undefined && (
+        {pageWidth !== undefined && pageWidth > 0 && (
           <Document
             file={RESUME_URL}
             loading={null}
@@ -66,14 +76,15 @@ export default function ResumeViewer() {
               setLoading(false);
               setError(true);
             }}
-            className={loading || error ? "hidden" : "flex justify-center"}
+            className={loading || error ? "hidden" : "flex justify-center w-full min-w-0"}
           >
-            <div className="mx-auto max-w-3xl overflow-hidden rounded-lg border border-neutral-300 bg-white shadow-xl shadow-neutral-400/60 dark:border-neutral-700 dark:shadow-none">
+            <div className="w-full max-w-3xl overflow-hidden rounded-lg border border-neutral-300 bg-white shadow-xl shadow-neutral-400/60 dark:border-neutral-700 dark:shadow-none">
               <Page
                 pageNumber={1}
                 width={pageWidth}
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
+                className="!max-w-full"
               />
             </div>
           </Document>

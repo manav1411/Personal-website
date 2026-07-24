@@ -11,3 +11,131 @@ body {
 .dark body {
   @apply bg-neutral-900 text-white;
 }
+
+/* Inline code pill (Markdown) */
+.md-inline-code {
+  @apply rounded px-1.5 py-0.5 font-mono text-[0.9em] font-normal
+    bg-neutral-200/80 text-neutral-800
+    dark:bg-neutral-800 dark:text-neutral-200;
+}
+
+/*
+ * Fenced code blocks — soft matte panel (same border/surface language as the
+ * rest of the site) with quiet Python highlighting. Avoids neon “terminal” hues.
+ */
+.md-code-block {
+  @apply my-4 overflow-x-auto rounded-md border px-5 py-4
+    border-white bg-neutral-100
+    dark:border-white dark:bg-neutral-800/80;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06);
+}
+
+.dark .md-code-block {
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+
+.md-code-block code.hljs {
+  @apply block w-full bg-transparent p-0 font-mono text-[0.875em] leading-[1.7]
+    text-neutral-700 dark:text-neutral-300;
+  background: transparent !important;
+  font-weight: 400;
+}
+
+/* Comments — soft sage */
+.md-code-block .hljs-comment,
+.md-code-block .hljs-quote {
+  color: #6b8f71;
+  font-style: italic;
+}
+
+.dark .md-code-block .hljs-comment,
+.dark .md-code-block .hljs-quote {
+  color: #8faf94;
+}
+
+/* Keywords / builtins — muted site blue */
+.md-code-block .hljs-keyword,
+.md-code-block .hljs-selector-tag,
+.md-code-block .hljs-built_in {
+  color: #4a6fa5;
+  font-weight: 500;
+}
+
+.dark .md-code-block .hljs-keyword,
+.dark .md-code-block .hljs-selector-tag,
+.dark .md-code-block .hljs-built_in {
+  color: #8ba4c4;
+}
+
+/* Strings — dusty warm matte */
+.md-code-block .hljs-string,
+.md-code-block .hljs-doctag {
+  color: #a67c6d;
+}
+
+.dark .md-code-block .hljs-string,
+.dark .md-code-block .hljs-doctag {
+  color: #c4a494;
+}
+
+/* Numbers / literals — soft clay */
+.md-code-block .hljs-number,
+.md-code-block .hljs-literal {
+  color: #9a7b6a;
+}
+
+.dark .md-code-block .hljs-number,
+.dark .md-code-block .hljs-literal {
+  color: #b89a88;
+}
+
+/* Function / class names — quiet slate-lilac */
+.md-code-block .hljs-title,
+.md-code-block .hljs-title.function_,
+.md-code-block .hljs-title.class_ {
+  color: #7a7394;
+  font-weight: 500;
+}
+
+.dark .md-code-block .hljs-title,
+.dark .md-code-block .hljs-title.function_,
+.dark .md-code-block .hljs-title.class_ {
+  color: #a8a0c0;
+}
+
+.md-code-block .hljs-params {
+  color: #6b6b6b;
+}
+
+.dark .md-code-block .hljs-params {
+  color: #a3a3a3;
+}
+
+.md-code-block .hljs-meta,
+.md-code-block .hljs-subst,
+.md-code-block .hljs-attr,
+.md-code-block .hljs-attribute,
+.md-code-block .hljs-variable,
+.md-code-block .hljs-template-variable {
+  color: #737373;
+}
+
+.dark .md-code-block .hljs-meta,
+.dark .md-code-block .hljs-subst,
+.dark .md-code-block .hljs-attr,
+.dark .md-code-block .hljs-attribute,
+.dark .md-code-block .hljs-variable,
+.dark .md-code-block .hljs-template-variable {
+  color: #a3a3a3;
+}
+
+.md-code-block .hljs-punctuation,
+.md-code-block .hljs-operator {
+  color: #8a8a8a;
+}
+
+.dark .md-code-block .hljs-punctuation,
+.dark .md-code-block .hljs-operator {
+  color: #9a9a9a;
+}
+
