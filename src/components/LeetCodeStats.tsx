@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { Flame, CheckCircle2, Trophy, ExternalLink, AlertTriangle } from 'lucide-react';
 import type { Difficulty } from '@/lib/leetcode';
 import { useLeetCodeStats } from '@/hooks/useLeetCodeStats';
-import { DAY_SECONDS, buildSolvedByDay, countByDifficulty, solvedLast30, streakFromSolves, todayUtcMidnight, type SolvedByDay } from '@/lib/leetcodeMetrics';
+import { AEST_OFFSET_SECONDS, DAY_SECONDS, buildSolvedByDay, countByDifficulty, solvedLast30, streakFromSolves, todayAestMidnight, type SolvedByDay } from '@/lib/leetcodeMetrics';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -36,7 +36,9 @@ function dayBackground(solved: boolean, isToday: boolean): string {
 }
 
 function formatDay(ts: number): string {
-  const date = new Date(ts * 1000);
+  // ts is an AEST day-start expressed in UTC epoch seconds; shift by the offset
+  // so the UTC getters read the intended AEST calendar date.
+  const date = new Date((ts + AEST_OFFSET_SECONDS) * 1000);
   return `${WEEKDAYS[date.getUTCDay()]}, ${
     MONTHS[date.getUTCMonth()]
   } ${date.getUTCDate()}`;
@@ -53,7 +55,7 @@ function SubmissionHeatmap({ solvedByDay }: SubmissionHeatmapProps) {
   // 10-column grid, so the bottom row holds the most recent 10 days and today
   // lands in the bottom-right corner.
   const cells = useMemo(() => {
-    const today = todayUtcMidnight();
+    const today = todayAestMidnight();
     const arr: { key: string; ts: number; isToday: boolean }[] = [];
     for (let i = 29; i >= 0; i -= 1) {
       const ts = today - i * DAY_SECONDS;

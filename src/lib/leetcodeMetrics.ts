@@ -11,6 +11,12 @@ import type {
 
 export const DAY_SECONDS = 86400;
 
+// Day boundaries are anchored to AEST (fixed UTC+10, deliberately ignoring
+// daylight saving) rather than UTC, so "today" rolls over at local midnight
+// instead of 10am. Keeping it a fixed offset means every day is exactly
+// DAY_SECONDS long, so the streak/heatmap arithmetic below stays exact.
+export const AEST_OFFSET_SECONDS = 10 * 3600;
+
 export function countByDifficulty(
   list: DifficultyCount[] | undefined,
   difficulty: Difficulty
@@ -18,17 +24,22 @@ export function countByDifficulty(
   return list?.find((d) => d.difficulty === difficulty)?.count ?? 0;
 }
 
-/** Unix seconds for today at UTC midnight. */
-export function todayUtcMidnight(): number {
-  const now = new Date();
-  return Math.floor(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 1000
+/** Floor a timestamp to the start of its AEST day, in unix seconds (UTC epoch). */
+export function aestDayStart(ts: number): number {
+  return (
+    Math.floor((ts + AEST_OFFSET_SECONDS) / DAY_SECONDS) * DAY_SECONDS -
+    AEST_OFFSET_SECONDS
   );
 }
 
-/** Floor a timestamp to its UTC-midnight day key (as used in the calendar map). */
+/** Unix seconds for the start of today in AEST. */
+export function todayAestMidnight(): number {
+  return aestDayStart(Math.floor(Date.now() / 1000));
+}
+
+/** Floor a timestamp to its AEST-day key (as used in the calendar map). */
 export function dayKeyForTimestamp(ts: number): string {
-  return String(Math.floor(ts / DAY_SECONDS) * DAY_SECONDS);
+  return String(aestDayStart(ts));
 }
 
 export type SolvedByDay = Record<string, SolvedProblem[]>;
@@ -62,7 +73,7 @@ export function streakFromSolves(solvedByDay: SolvedByDay): number {
 /** Consecutive days of activity ending today or yesterday; 0 if broken. */
 export function currentStreak(active: Set<string>): number {
   if (active.size === 0) return 0;
-  let cursor = todayUtcMidnight();
+  let cursor = todayAestMidnight();
   if (!active.has(String(cursor)) && active.has(String(cursor - DAY_SECONDS))) {
     cursor -= DAY_SECONDS;
   } else if (!active.has(String(cursor))) {
@@ -86,7 +97,7 @@ export function solvedLast30(
   solvedByDay: SolvedByDay,
   accurate: boolean
 ): { count: number; capped: boolean } {
-  const cutoff = todayUtcMidnight() - 29 * DAY_SECONDS;
+  const cutoff = todayAestMidnight() - 29 * DAY_SECONDS;
   const slugs = new Set<string>();
   for (const [key, list] of Object.entries(solvedByDay)) {
     if (Number(key) < cutoff) continue;

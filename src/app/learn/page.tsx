@@ -1,5 +1,6 @@
 import ProfilePanel from '@/components/learn/ProfilePanel';
 import WeekBoard from '@/components/learn/WeekBoard';
+import Roadmap from '@/components/learn/Roadmap';
 import CohortLeaderboard from '@/components/learn/CohortLeaderboard';
 import MockTimer from '@/components/learn/MockTimer';
 import cohort from '@/data/cohortData';
@@ -42,6 +43,10 @@ const LearnPage = async () => {
                     Python for LeetCode
                     <ExternalLink size={14} className="shrink-0 opacity-60" />
                 </a>
+
+                <div className="mt-6">
+                    <Roadmap />
+                </div>
             </section>
 
             {/*

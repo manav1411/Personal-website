@@ -10,7 +10,7 @@
 
 import { getEnv, type AppEnv } from './env';
 import { getLeetCodeStats, type RecentSubmission, type SolvedProblem } from '@/lib/leetcode';
-import { DAY_SECONDS, dayKeyForTimestamp, todayUtcMidnight } from '@/lib/leetcodeMetrics';
+import { DAY_SECONDS, dayKeyForTimestamp, todayAestMidnight } from '@/lib/leetcodeMetrics';
 
 const KEY_PREFIX = 'solves:';
 const INDEX_KEY = 'solves:_index';
@@ -59,9 +59,38 @@ function mergeRecent(days: SolvedDays, recent: RecentSubmission[]): boolean {
   return changed;
 }
 
+/**
+ * Re-bucket any legacy UTC-midnight keys onto AEST days. Days used to be keyed
+ * at UTC midnight; once we switched the boundary to AEST those old keys would no
+ * longer be looked up (and their solves would vanish from the heatmap). A key is
+ * legacy iff it sits exactly on a UTC-midnight boundary; we map it to the AEST
+ * day sharing that UTC calendar date. Returns true if anything moved.
+ */
+function migrateLegacyKeys(days: SolvedDays): boolean {
+  let changed = false;
+  for (const key of Object.keys(days)) {
+    const ts = Number(key);
+    // AEST keys are offset from the UTC-midnight grid, so anything still landing
+    // exactly on it is a pre-migration (UTC) key.
+    if (!Number.isFinite(ts) || ts % DAY_SECONDS !== 0) continue;
+    // The original solve time is lost, so anchor to the middle of that UTC day.
+    const newKey = dayKeyForTimestamp(ts + DAY_SECONDS / 2);
+    if (newKey === key) continue;
+    const target = (days[newKey] ??= []);
+    for (const problem of days[key]) {
+      if (!target.some((p) => p.titleSlug === problem.titleSlug)) {
+        target.push(problem);
+      }
+    }
+    delete days[key];
+    changed = true;
+  }
+  return changed;
+}
+
 /** Drop days older than the retention window. Returns true if anything changed. */
 function prune(days: SolvedDays): boolean {
-  const cutoff = todayUtcMidnight() - RETENTION_DAYS * DAY_SECONDS;
+  const cutoff = todayAestMidnight() - RETENTION_DAYS * DAY_SECONDS;
   let pruned = false;
   for (const key of Object.keys(days)) {
     if (Number(key) < cutoff) {
@@ -97,9 +126,10 @@ export async function accumulateSolves(
 ): Promise<SolvedDays> {
   const env = await getEnv();
   const store = await readSolves(env, username);
+  const migrated = migrateLegacyKeys(store.days);
   const changed = mergeRecent(store.days, recent);
   const pruned = prune(store.days);
-  if (changed || pruned) {
+  if (migrated || changed || pruned) {
     await env.LEARN_KV.put(keyFor(username), JSON.stringify(store));
   }
   await registerUsername(env, username);
@@ -127,9 +157,10 @@ export async function refreshAll(): Promise<{ tracked: number; updated: number }
     try {
       const stats = await getLeetCodeStats(username);
       const store = await readSolves(env, username);
+      const migrated = migrateLegacyKeys(store.days);
       const changed = mergeRecent(store.days, stats.recent);
       const pruned = prune(store.days);
-      if (changed || pruned) {
+      if (migrated || changed || pruned) {
         await env.LEARN_KV.put(keyFor(username), JSON.stringify(store));
         updated += 1;
       }
