@@ -30,14 +30,29 @@ export interface WeekTask {
   label: string;
 }
 
+/** One of the two topic homework sections inside a week. */
+export interface WeekTopic {
+  homework: HomeworkProblem[];
+}
+
 export interface Week {
   /**
    * 1-based position of the week. This mirrors the ordering in the editor (the
    * first week is 1, the next is 2, …) and is assigned from list order on save.
    */
   week: number;
-  topic: string;
+  /** Card title on the Learn board (e.g. "Python for DSA & Binary Search"). */
+  title: string;
+  /** When false, the learn card is greyed out and slides/homework are disabled. */
+  accessible: boolean;
+  /** Single Markdown slideshow for the week. */
   slides: Slide[];
-  homework: HomeworkProblem[];
+  /**
+   * 0-based index where topic 2 begins in `slides`. Topic 1 always starts at 0.
+   * Hovering the Slides button lets learners jump to this index for topic 2.
+   */
+  topic2SlideStart: number;
+  /** Left and right topic sections (names + homework). */
+  topics: [WeekTopic, WeekTopic];
   tasks?: WeekTask[];
 }

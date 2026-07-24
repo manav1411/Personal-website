@@ -49,13 +49,22 @@ export type SolvedByDay = Record<string, SolvedProblem[]>;
  * up past LeetCode's 20-item cap) and falls back to deriving days from the live
  * recent-AC feed when it's absent. This is the single source of truth for the
  * heatmap, streak, and 30-day count so they always agree.
+ *
+ * When falling back to `recent`, each slug is kept on its earliest AEST day only
+ * — LeetCode's feed can include multiple ACs of the same problem (re-solves).
  */
 export function buildSolvedByDay(
   stats: Pick<LeetCodeStats, 'solvedDays' | 'recent'>
 ): SolvedByDay {
   if (stats.solvedDays) return stats.solvedDays;
   const map: SolvedByDay = {};
-  for (const submission of stats.recent) {
+  const seen = new Set<string>();
+  const ordered = [...stats.recent].sort(
+    (a, b) => Number(a.timestamp) - Number(b.timestamp)
+  );
+  for (const submission of ordered) {
+    if (seen.has(submission.titleSlug)) continue;
+    seen.add(submission.titleSlug);
     const key = dayKeyForTimestamp(Number(submission.timestamp));
     (map[key] ??= []).push({
       title: submission.title,

@@ -9,10 +9,24 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Slide } from '@/lib/content';
 import Markdown from '@/components/Markdown';
 
-export default function SlideDeck({ slides }: { slides: Slide[] }) {
-  const [index, setIndex] = useState(0);
-
+export default function SlideDeck({
+  slides,
+  initialIndex = 0,
+}: {
+  slides: Slide[];
+  /** 0-based slide to open on (clamped). */
+  initialIndex?: number;
+}) {
   const count = slides.length;
+  const clampedStart =
+    count <= 0 ? 0 : Math.min(Math.max(Math.floor(initialIndex), 0), count - 1);
+  const [index, setIndex] = useState(clampedStart);
+
+  // Remount-safe: if the deck is reopened at a different topic jump, sync.
+  useEffect(() => {
+    setIndex(clampedStart);
+  }, [clampedStart]);
+
   const go = useCallback(
     (delta: number) => setIndex((i) => Math.min(Math.max(i + delta, 0), count - 1)),
     [count]

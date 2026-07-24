@@ -43,16 +43,83 @@ async function readSolves(env: AppEnv, username: string): Promise<StoredSolves> 
   return { days: {} };
 }
 
-/** Merge a recent-AC feed into the stored days. Returns true if anything changed. */
+/**
+ * Index slug -> day key for the earliest day each problem currently appears on.
+ */
+function earliestDayBySlug(days: SolvedDays): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const key of Object.keys(days).sort((a, b) => Number(a) - Number(b))) {
+    for (const problem of days[key]) {
+      if (!map.has(problem.titleSlug)) map.set(problem.titleSlug, key);
+    }
+  }
+  return map;
+}
+
+/**
+ * Drop later-day duplicates of the same slug (re-solves / migration leftovers).
+ * Each problem should appear on its earliest recorded day only.
+ */
+function dedupeSlugsKeepEarliest(days: SolvedDays): boolean {
+  const firstDay = earliestDayBySlug(days);
+  let changed = false;
+  for (const key of Object.keys(days)) {
+    const kept = days[key].filter((problem) => firstDay.get(problem.titleSlug) === key);
+    if (kept.length === 0) {
+      delete days[key];
+      changed = true;
+    } else if (kept.length !== days[key].length) {
+      days[key] = kept;
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+/**
+ * Merge a recent-AC feed into the stored days. A problem is attributed to the
+ * earliest AEST day we have evidence for — re-solving later does not paint an
+ * extra heatmap cell. Returns true if anything changed.
+ */
 function mergeRecent(days: SolvedDays, recent: RecentSubmission[]): boolean {
   let changed = false;
-  for (const submission of recent) {
+  const slugDay = earliestDayBySlug(days);
+
+  // Oldest first so the first AC wins when the live feed lists the same slug
+  // more than once (LeetCode returns every recent AC, including re-solves).
+  const ordered = [...recent].sort(
+    (a, b) => Number(a.timestamp) - Number(b.timestamp)
+  );
+
+  for (const submission of ordered) {
     const ts = Number(submission.timestamp);
     if (!Number.isFinite(ts)) continue;
     const key = dayKeyForTimestamp(ts);
-    const list = (days[key] ??= []);
-    if (!list.some((p) => p.titleSlug === submission.titleSlug)) {
-      list.push({ title: submission.title, titleSlug: submission.titleSlug });
+    const existing = slugDay.get(submission.titleSlug);
+
+    if (existing === undefined) {
+      (days[key] ??= []).push({
+        title: submission.title,
+        titleSlug: submission.titleSlug,
+      });
+      slugDay.set(submission.titleSlug, key);
+      changed = true;
+      continue;
+    }
+
+    // Live feed has an earlier AC than whatever we stored — move the problem.
+    if (Number(key) < Number(existing)) {
+      const prev = days[existing] ?? [];
+      days[existing] = prev.filter((p) => p.titleSlug !== submission.titleSlug);
+      if (days[existing].length === 0) delete days[existing];
+      const target = (days[key] ??= []);
+      if (!target.some((p) => p.titleSlug === submission.titleSlug)) {
+        target.push({
+          title: submission.title,
+          titleSlug: submission.titleSlug,
+        });
+      }
+      slugDay.set(submission.titleSlug, key);
       changed = true;
     }
   }
@@ -128,8 +195,9 @@ export async function accumulateSolves(
   const store = await readSolves(env, username);
   const migrated = migrateLegacyKeys(store.days);
   const changed = mergeRecent(store.days, recent);
+  const deduped = dedupeSlugsKeepEarliest(store.days);
   const pruned = prune(store.days);
-  if (migrated || changed || pruned) {
+  if (migrated || changed || deduped || pruned) {
     await env.LEARN_KV.put(keyFor(username), JSON.stringify(store));
   }
   await registerUsername(env, username);
@@ -159,8 +227,9 @@ export async function refreshAll(): Promise<{ tracked: number; updated: number }
       const store = await readSolves(env, username);
       const migrated = migrateLegacyKeys(store.days);
       const changed = mergeRecent(store.days, stats.recent);
+      const deduped = dedupeSlugsKeepEarliest(store.days);
       const pruned = prune(store.days);
-      if (migrated || changed || pruned) {
+      if (migrated || changed || deduped || pruned) {
         await env.LEARN_KV.put(keyFor(username), JSON.stringify(store));
         updated += 1;
       }

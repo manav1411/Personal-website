@@ -22,7 +22,9 @@ import type {
   Slide,
   Week,
   WeekTask,
+  WeekTopic,
 } from '@/lib/content';
+import { CURRICULUM_WEEK_COUNT } from '@/data/curriculumWeeks';
 import type { LeetCodeProblem } from '@/lib/leetcode';
 import Markdown from '@/components/Markdown';
 import DifficultyBadge from '@/components/learn/DifficultyBadge';
@@ -38,6 +40,22 @@ function slidesToText(slides: Slide[]): string {
 
 function textToSlides(text: string): Slide[] {
   return text.split(SLIDE_DIVIDER).map((content) => ({ content }));
+}
+
+function emptyTopic(): WeekTopic {
+  return { homework: [] };
+}
+
+function emptyWeek(weekNumber: number): Week {
+  return {
+    week: weekNumber,
+    title: '',
+    accessible: false,
+    slides: [],
+    topic2SlideStart: 0,
+    topics: [emptyTopic(), emptyTopic()],
+    tasks: [],
+  };
 }
 
 const inputClass =
@@ -92,12 +110,8 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
   };
 
   const addWeek = () => {
-    // `week` is assigned from list order on save; the value here is just a
-    // placeholder for the new (last) entry.
-    setWeeks((prev) => [
-      ...prev,
-      { week: prev.length + 1, topic: '', slides: [], homework: [], tasks: [] },
-    ]);
+    if (weeks.length >= CURRICULUM_WEEK_COUNT) return;
+    setWeeks((prev) => [...prev, emptyWeek(prev.length + 1)]);
     setExpanded((prev) => new Set(prev).add(weeks.length));
   };
 
@@ -176,7 +190,9 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
       </div>
 
       <div className="w-full max-w-4xl flex flex-col gap-4 pb-24">
-        {weeks.map((week, wi) => (
+        {weeks.map((week, wi) => {
+          const weekTitle = week.title || 'Untitled week';
+          return (
           <div
             key={wi}
             className="dark:bg-neutral-800 border border-neutral-400 dark:border-neutral-500 rounded-md shadow-md dark:shadow-neutral-800/50"
@@ -192,8 +208,13 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
                   Week {wi + 1}
                 </span>
                 <span className="truncate font-semibold text-neutral-900 dark:text-neutral-100">
-                  {week.topic || 'Untitled week'}
+                  {weekTitle}
                 </span>
+                {!week.accessible && (
+                  <span className="shrink-0 text-[10px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 border border-neutral-400 dark:border-neutral-600 rounded px-1.5 py-0.5">
+                    Locked
+                  </span>
+                )}
               </button>
               <button
                 type="button"
@@ -218,7 +239,11 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
                 aria-label="Delete week"
                 className={`${iconBtnClass} hover:text-rose-500`}
                 onClick={() => {
-                  if (confirm(`Delete Week ${wi + 1}${week.topic ? ` (${week.topic})` : ''}?`)) {
+                  if (
+                    confirm(
+                      `Delete Week ${wi + 1} (${weekTitle})? It will be re-seeded empty on save if under 12 weeks.`
+                    )
+                  ) {
                     setWeeks((prev) => prev.filter((_, i) => i !== wi));
                   }
                 }}
@@ -229,32 +254,96 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
 
             {expanded.has(wi) && (
               <div className="px-4 pb-4 border-t border-neutral-300 dark:border-neutral-700 pt-4 flex flex-col gap-5">
-                {/* Week meta */}
-                <div>
-                  <label className={labelClass}>Topic</label>
+                <label className="inline-flex items-center gap-2 text-sm text-neutral-800 dark:text-neutral-200 cursor-pointer">
                   <input
-                    className={inputClass}
-                    placeholder="e.g. Arrays & Hashing"
-                    value={week.topic}
+                    type="checkbox"
+                    className="rounded border-neutral-400 dark:border-neutral-600"
+                    checked={week.accessible}
                     onChange={(e) =>
                       mutate((d) => {
-                        d[wi].topic = e.target.value;
+                        d[wi].accessible = e.target.checked;
+                      })
+                    }
+                  />
+                  Accessible on Learn page
+                </label>
+
+                <div>
+                  <label className={labelClass}>Week title</label>
+                  <input
+                    className={inputClass}
+                    placeholder="e.g. Python for DSA & Binary Search"
+                    value={week.title}
+                    onChange={(e) =>
+                      mutate((d) => {
+                        d[wi].title = e.target.value;
                       })
                     }
                   />
                 </div>
 
-                {/* Slides */}
                 <SlidesEditor
                   slides={week.slides}
                   onChange={(next) =>
                     mutate((d) => {
                       d[wi].slides = next;
+                      // Keep topic-2 start in range after slide count changes.
+                      if (d[wi].topic2SlideStart >= next.length) {
+                        d[wi].topic2SlideStart = Math.max(0, next.length - 1);
+                      }
                     })
                   }
                 />
 
-                {/* Tasks (shown above homework on the Learn page) */}
+                <div>
+                  <label className={labelClass}>
+                    Topic 2 starts at slide (1-based)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={Math.max(1, week.slides.length)}
+                    className={`${inputClass} w-32`}
+                    value={week.slides.length === 0 ? 1 : week.topic2SlideStart + 1}
+                    disabled={week.slides.length === 0}
+                    onChange={(e) =>
+                      mutate((d) => {
+                        const oneBased = Number(e.target.value);
+                        const max = Math.max(1, d[wi].slides.length);
+                        const clamped = Math.min(
+                          Math.max(Number.isFinite(oneBased) ? oneBased : 1, 1),
+                          max
+                        );
+                        d[wi].topic2SlideStart = clamped - 1;
+                      })
+                    }
+                  />
+                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    Hovering Slides on Learn jumps here for Topic 2. Topic 1
+                    always starts at slide 1.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  {([0, 1] as const).map((ti) => (
+                    <div
+                      key={ti}
+                      className="flex flex-col gap-4 rounded-md border border-neutral-300 dark:border-neutral-700 p-3"
+                    >
+                      <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                        Topic {ti + 1} homework
+                      </h3>
+                      <HomeworkEditor
+                        problems={week.topics[ti].homework}
+                        onChange={(fn) =>
+                          mutate((d) => fn(d[wi].topics[ti].homework))
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Tasks (week-level; shown above homework on the Learn page) */}
                 <TasksEditor
                   tasks={week.tasks ?? []}
                   onChange={(fn) =>
@@ -264,25 +353,22 @@ export default function AdminEditor({ initialWeeks }: { initialWeeks: Week[] }) 
                     })
                   }
                 />
-
-                {/* Homework */}
-                <HomeworkEditor
-                  problems={week.homework}
-                  onChange={(fn) => mutate((d) => fn(d[wi].homework))}
-                />
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
 
-        <button
-          type="button"
-          onClick={addWeek}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm border border-dashed rounded-md text-neutral-700 dark:text-neutral-300 border-neutral-400 dark:border-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-800"
-        >
-          <Plus size={16} />
-          Add week
-        </button>
+        {weeks.length < CURRICULUM_WEEK_COUNT && (
+          <button
+            type="button"
+            onClick={addWeek}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm border border-dashed rounded-md text-neutral-700 dark:text-neutral-300 border-neutral-400 dark:border-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+          >
+            <Plus size={16} />
+            Add week
+          </button>
+        )}
       </div>
     </main>
   );

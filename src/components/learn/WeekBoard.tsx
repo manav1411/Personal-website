@@ -1,6 +1,6 @@
 'use client';
 
-// The curriculum as a left-to-right board of weeks (5 across on wide screens).
+// The curriculum as a 12-week board (4 across on wide screens, 3 rows).
 // Fetches the selected user's solves once and passes them down so each week
 // shows the user's progress.
 
@@ -25,7 +25,7 @@ export default function WeekBoard({ weeks }: { weeks: Week[] }) {
   );
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       {weeks.map((week) => (
         <WeekCard
           key={week.week}

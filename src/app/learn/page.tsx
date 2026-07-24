@@ -26,7 +26,7 @@ const LearnPage = async () => {
                 <ProfilePanel />
             </section>
             
-            <section className="w-full max-w-4xl mt-12">
+            <section className="w-full max-w-5xl mt-12">
                 <h2 className="text-2xl font-semibold mb-4">Content</h2>
                 <WeekBoard weeks={weeks} />
             </section>

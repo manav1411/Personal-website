@@ -24,13 +24,15 @@ interface MockTimerProps {
 }
 
 export default function MockTimer({ weeks }: MockTimerProps) {
-  // The candidate pool is every homework problem, deduped by slug, so it always
-  // mirrors whatever content is live.
+  // The candidate pool is every homework problem across both topics, deduped by
+  // slug, so it always mirrors whatever content is live.
   const pool = useMemo<HomeworkProblem[]>(
     () =>
       Array.from(
         new Map(
-          weeks.flatMap((w) => w.homework).map((p) => [p.slug, p])
+          weeks
+            .flatMap((w) => w.topics.flatMap((t) => t.homework))
+            .map((p) => [p.slug, p])
         ).values()
       ),
     [weeks]
